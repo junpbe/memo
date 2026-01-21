@@ -16,7 +16,7 @@ return new class extends Migration
 
             $table->id()->comment('サロゲートキー');
             $table->foreignId('user_id')->constrained()->cascadeOnDelete()->comment('ユーザID:users.id');
-            $table->text('memo')->nullable()->comment('メモ');
+            $table->text('body')->nullable()->comment('本文');
             $table->datetimes(6);
         });
 
