@@ -5,7 +5,7 @@ namespace Tests\Feature\Settings;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Fortify\Features;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class TwoFactorAuthenticationTest extends TestCase
@@ -28,7 +28,7 @@ class TwoFactorAuthenticationTest extends TestCase
 
     public function test_two_factor_settings_page_can_be_rendered(): void
     {
-        $user = User::factory()->withoutTwoFactor()->create();
+        $user = User::factory()->create();
 
         $this->actingAs($user)
             ->withSession(['auth.password_confirmed_at' => time()])
@@ -73,7 +73,7 @@ class TwoFactorAuthenticationTest extends TestCase
 
         $this->actingAs($user);
 
-        $component = Volt::test('settings.two-factor');
+        $component = Livewire::test('pages::settings.two-factor');
 
         $component->assertSet('twoFactorEnabled', false);
 
