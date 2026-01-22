@@ -4,11 +4,12 @@ namespace App\Models;
 
 use App\Models\Traits\Creatable;
 use App\Models\Traits\Updatable;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * メモモデル。
  */
-class Memo
+class Memo extends Model
 {
     use Creatable, Updatable;
 
