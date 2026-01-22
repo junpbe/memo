@@ -15,12 +15,8 @@ new class extends Component
 };
 ?>
 
-<div>
-
-<div class="flex gap-4">
+<div class="flex flex-wrap gap-4">
 @foreach ($memos as $memo)
 	<livewire:memos.memo :$memo />
 @endforeach
-</div>
-
 </div>

@@ -9,10 +9,6 @@ new class extends Component
 };
 ?>
 
-<div>
-
-<div class="w-64 flex-initial rounded-xl border border-neutral-200 dark:border-neutral-700">
-	{{ $memo->body }}
-</div>
-
+<div class="flex-none">
+	<flux:memo-textarea resize="both">{{ $memo->body }}</flux:textarea>
 </div>
