@@ -27,12 +27,16 @@ trait Updatable
     }
 
     /**
-     * 更新者リレーション。
+     * リレーション：更新者。
      *
      * @return BelongsTo
      */
     public function updatedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->belongsTo(User::class, 'updated_by')->withDefault([
+            'id' => 0,
+            'name' => '削除済みユーザ',
+            'email' => 'deleted@example.com',
+        ]);
     }
 }

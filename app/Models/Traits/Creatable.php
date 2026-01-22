@@ -23,12 +23,16 @@ trait Creatable
     }
 
     /**
-     * 作成者リレーション。
+     * リレーション：作成者。
      *
      * @return BelongsTo
      */
     public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by')->withDefault([
+            'id' => 0,
+            'name' => '削除済みユーザ',
+            'email' => 'deleted@example.com',
+        ]);
     }
 }
