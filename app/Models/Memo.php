@@ -3,15 +3,17 @@
 namespace App\Models;
 
 use App\Models\Traits\Creatable;
+use App\Models\Traits\Lockable;
 use App\Models\Traits\Updatable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * メモモデル。
  */
 class Memo extends Model
 {
-    use Creatable, Updatable;
+    use Lockable, Creatable, Updatable;
 
     /**
      * The attributes that are mass assignable.
@@ -41,5 +43,15 @@ class Memo extends Model
         return [
             //
         ];
+    }
+
+    /**
+     * リレーション：ユーザ。
+     *
+     * @return BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->BelongsTo(User::class);
     }
 }

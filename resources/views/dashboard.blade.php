@@ -17,5 +17,5 @@
         </div>
     </div>
 -->
-    <livewire:memos.memos />
+	<livewire:memo.list />
 </x-layouts::app>
