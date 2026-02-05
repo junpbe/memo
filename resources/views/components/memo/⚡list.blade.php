@@ -39,7 +39,7 @@ new class extends Component
 		<livewire:memo.rec wire:key="new_{{ $loop->index }}" />
 @endforeach
 @foreach ($this->list as $rec)
-		<livewire:memo.rec :$rec wire:key="memo_{{ $rec->id }}" />
+		<livewire:memo.rec :$rec wire:key="{{ $rec->id }}_{{ $rec->updated_at }}" />
 @endforeach
 	</div>
 </div>
