@@ -5,6 +5,7 @@ use Livewire\Component;
 new class extends Component
 {
     //
+    //TODO　使わない？
 };
 ?>
 

@@ -5,39 +5,88 @@ use App\Livewire\Forms\MemoForm;
 use App\Models\Memo;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
-use Livewire\Attributes\Reactive;
 
 new class extends Component
 {
     /** @var \App\Livewire\Forms\MemoForm フォーム */
-    #[Reactive]
     public MemoForm $form;
 
     /**
      * mount.
      *
-     * @param Memo $rec
+     * @param \App\Models\Memo $rec 既存モデル
+     * @param int $new_key 新規追加のリストのキー
      */
-    public function mount(?Memo $rec = null)
+    public function mount(?Memo $rec = null, ?int $new_key = null)
     {
-        // 新規の場合はモデルのIDがない
-        if (!isset($rec->id)) {
+        // モデルのIDがある場合は、既存データ
+        if (isset($rec->id)) {
+            $this->form->setModel($rec);
             return;
         }
 
-        $this->form->setModel($rec);
+        // 新規追加のリストのキーがある場合は新規追加
+        if (isset($new_key)) {
+            $this->form->new_key = $new_key;
+            return;
+        }
+
+        throw new InvalidArgumentException('モデルも新規追加のリストのキーも指定されていません。');
     }
 
     /**
      * 保存。
      */
-    public function save()
+    public function save(): void
     {
-        DB::transaction(function () {
+        $new_key = DB::transaction(function () {
+            $new_key = $this->form->new_key;
             $this->form->save();
+            return $new_key;
         });
+        $this->dispatch('saved-memo', $this->form->id);
+
+        if (isset($new_key)) {
+            $this->dispatch('add-memo', $new_key);
+            return;
+        }
+        $this->dispatch('update-memo', $this->form->id);
     }
-    //TODO　削除ロジックをどこに入れるか
+
+    /**
+     * 削除。
+     */
+    public function remove(): void
+    {
+        if ($this->form->modelExists()) {
+            DB::transaction(function () {
+                $rec = Memo::lockForUpdate()->find($this->form->id);
+                if (!isset($rec)) {
+                    return;
+                }
+                $rec->delete();
+            });
+        }
+
+        $this->dispatch('remove-memo', $this->form->new_key);
+    }
+
+    /**
+     * リロード。
+     */
+    public function reload(): void
+    {
+        if (!$this->form->modelExists()) {
+            return;
+        }
+
+        $model = Memo::find($this->form->id);
+        if (!isset($model)) {
+            return;
+        }
+
+        $this->form->setModel($model);
+    }
 
     /**
      * exception.
@@ -45,7 +94,8 @@ new class extends Component
      * @param mixed $e
      * @param mixed $stopPropagation
      */
-    public function exception($e, $stopPropagation) {
+    public function exception($e, $stopPropagation)
+    {
         if ($e instanceof ModelNotLatestException) {
             $this->dispatch("model-not-latest-error");
             $stopPropagation();
@@ -54,11 +104,11 @@ new class extends Component
 };
 ?>
 
-<div>
+<div {{ $attributes }}>
 	<x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
 	@error('form.body') <span class="error">{{ $message }}</span> @enderror
-	<flux:memo-textarea resize="both" wire:model="form.body" wire:change="save"></flux:memo-textarea>
-	{{ $form->model?->body }}
-	{{ $form->model?->updated_at }}
-	<button type="button" wire:click="$refresh">test</button>
+	<flux:memo-textarea resize="both" wire:model="form.body" wire:input.debounce.500ms="save"></flux:memo-textarea>
+	<flux:button square wire:click="reload"><flux:icon.arrow-path /></flux:button>
+	<flux:button square wire:click="remove"><flux:icon.trash /></flux:button>
+	<x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
 </div>

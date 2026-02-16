@@ -15,6 +15,9 @@ class Memo extends Model
 {
     use Lockable, Creatable, Updatable;
 
+    /** @see \Illuminate\Database\Eloquent\Concerns\HasAttributes::dateFormat */
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     /**
      * The attributes that are mass assignable.
      *
