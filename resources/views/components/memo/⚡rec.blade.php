@@ -4,6 +4,7 @@ use App\Exceptions\ModelNotLatestException;
 use App\Livewire\Forms\MemoForm;
 use App\Models\Memo;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\Attributes\Locked;
 
@@ -70,6 +71,10 @@ new class extends Component
                 if (!isset($rec)) {
                     return;
                 }
+
+                // 権限チェック
+                Gate::authorize('delete', $rec);
+
                 $rec->delete();
             });
         }

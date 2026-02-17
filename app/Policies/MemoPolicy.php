@@ -9,10 +9,23 @@ use Illuminate\Auth\Access\Response;
 class MemoPolicy
 {
     /**
+     * Perform pre-authorization checks.
+     */
+    public function before(User $user, string $ability): bool|null
+    {
+        // 管理者はすべて許可
+        if ($user->isAdministrator()) {
+            return true;
+        }
+        return null;
+    }
+
+    /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
+        // 未使用
         return false;
     }
 
@@ -21,6 +34,10 @@ class MemoPolicy
      */
     public function view(User $user, Memo $memo): bool
     {
+        // 自分のデータは許可
+        if ($memo->user_id === $user->id) {
+            return true;
+        }
         return false;
     }
 
@@ -29,7 +46,8 @@ class MemoPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // 誰でも作成可能
+        return true;
     }
 
     /**
@@ -37,6 +55,10 @@ class MemoPolicy
      */
     public function update(User $user, Memo $memo): bool
     {
+        // 自分のデータは許可
+        if ($memo->user_id === $user->id) {
+            return true;
+        }
         return false;
     }
 
@@ -45,6 +67,10 @@ class MemoPolicy
      */
     public function delete(User $user, Memo $memo): bool
     {
+        // 自分のデータは許可
+        if ($memo->user_id === $user->id) {
+            return true;
+        }
         return false;
     }
 
@@ -53,6 +79,7 @@ class MemoPolicy
      */
     public function restore(User $user, Memo $memo): bool
     {
+        // 未使用
         return false;
     }
 
@@ -61,6 +88,7 @@ class MemoPolicy
      */
     public function forceDelete(User $user, Memo $memo): bool
     {
+        // 未使用
         return false;
     }
 }

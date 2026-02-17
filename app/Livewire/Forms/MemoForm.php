@@ -5,6 +5,7 @@ namespace App\Livewire\Forms;
 use App\Models\Memo;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Form;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
@@ -122,6 +123,9 @@ class MemoForm extends Form
             throw new LogicException('idがセットされている状態で呼び出されました。');
         }
 
+        // 権限チェック
+        Gate::authorize('create', Memo::class);
+
         $this->validate();
 
         $model = new Memo();
@@ -145,7 +149,11 @@ class MemoForm extends Form
 
         $this->validate();
 
-        $model = Memo::lockLatest($this->id, $this->updated_at);//TODO　ミリ秒が飛ぶ
+        $model = Memo::lockLatest($this->id, $this->updated_at);
+
+        // 権限チェック
+        Gate::authorize('update', $model);
+
         $model->body = $this->body;
         $model->save();
 
