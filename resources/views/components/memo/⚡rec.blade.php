@@ -45,18 +45,10 @@ new class extends Component
      */
     public function save(): void
     {
-        $new_key = DB::transaction(function () {
-            $new_key = $this->form->new_key;
+        DB::transaction(function () {
             $this->form->save();
-            return $new_key;
         });
         $this->dispatch('saved-memo', $this->form->id);
-
-        if (isset($new_key)) {
-            $this->dispatch('add-memo', $new_key);
-            return;
-        }
-        $this->dispatch('update-memo', $this->form->id);
     }
 
     /**
@@ -83,7 +75,7 @@ new class extends Component
         $this->removed = true;
 
         // イベント発行（新規データの場合新規追加リストのキーを渡す。そうでない場合はnullを渡すことになるが特に意味は無く、親再レンダリングで消える）
-        $this->dispatch('remove-memo', $this->form->new_key);
+        $this->dispatch('removed-memo', $this->form->new_key);
     }
 
     /**

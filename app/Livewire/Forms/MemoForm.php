@@ -107,7 +107,6 @@ class MemoForm extends Form
         if (!$this->modelExists()) {
             $this->store();
             return;
-            // TODO 新規の時は新規リストから消して、本リストを更新
         }
 
         $this->update();
@@ -134,7 +133,6 @@ class MemoForm extends Form
         $model->save();
 
         $this->setModel($model);
-        //TODO　新規の時は新規リストから消して、本リストを更新
     }
 
     /**

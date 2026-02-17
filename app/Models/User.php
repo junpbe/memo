@@ -74,4 +74,14 @@ class User extends Authenticatable
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
+
+    /**
+     * 管理者かどうか。
+     *
+     * @return bool 管理者の場合true、そうでない場合false
+     */
+    public function isAdministrator(): bool
+    {
+        return false;
+    }
 }

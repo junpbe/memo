@@ -37,7 +37,7 @@ new class extends Component
      *
      * @param int $new_key 追加一覧のキー
      */
-    #[On('remove-memo')]
+    #[On('removed-memo')]
     public function remove(?int $new_key = null): void
     {
         // 追加一覧にないものは何もしない（再レンダリングで消える）
@@ -45,20 +45,8 @@ new class extends Component
             return;
         }
 
+        // 追加一覧から削除
         unset($this->add_list[$new_key]);
-    }
-
-    /**
-     * 再レンダリング。
-     */
-    #[On('update-memo')]
-    public function reRender(): void
-    {
-        // 再レンダリングさせるだけなので処理なし
-
-        // リストはeloquentのコレクションで持っているので、リクエストごとにハイドレートでクエリが投げられる
-        // なので、更新時も更新日時が変更される
-        // モデルが消えたときは自動的にリストから除外される挙動っぽい（eloquentのコレクションの仕様？）
     }
 
     /**
@@ -76,6 +64,7 @@ new class extends Component
     public function refreshList(): void
     {
         $this->list = Auth::user()->memos;
+
         // 一覧を更新したら、すべての更新日時を結合してハッシュ化したものを生成し、強制的に再レンダリングさせる（全データの更新日時が変わらなければ再レンダリングしない）
         $this->dummy_key = md5($this->list->pluck('updated_at')
             ->map(fn ($updated_at) => $updated_at->format('YmdHisu'))
