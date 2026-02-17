@@ -5,11 +5,16 @@ use App\Livewire\Forms\MemoForm;
 use App\Models\Memo;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\Attributes\Locked;
 
 new class extends Component
 {
     /** @var \App\Livewire\Forms\MemoForm フォーム */
     public MemoForm $form;
+
+    /** @var bool 削除アクションを実行した瞬間だけtrueにして親リストが更新されるまで非表示にする */
+    #[Locked]
+    public bool $removed = false;
 
     /**
      * mount.
@@ -58,6 +63,7 @@ new class extends Component
      */
     public function remove(): void
     {
+        // データがDBに存在するなら削除
         if ($this->form->modelExists()) {
             DB::transaction(function () {
                 $rec = Memo::lockForUpdate()->find($this->form->id);
@@ -68,6 +74,10 @@ new class extends Component
             });
         }
 
+        // 子コンポーネント再レンダリング時にすぐに見えなくさせる（イベントを親がキャッチしてからだと一瞬ラグを感じるため）
+        $this->removed = true;
+
+        // イベント発行（新規データの場合新規追加リストのキーを渡す。そうでない場合はnullを渡すことになるが特に意味は無く、親再レンダリングで消える）
         $this->dispatch('remove-memo', $this->form->new_key);
     }
 
@@ -104,7 +114,7 @@ new class extends Component
 };
 ?>
 
-<div {{ $attributes }}>
+<div {{ $attributes->class(['invisible' => $removed]) }} wire:transition>
 	<x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
 	@error('form.body') <span class="error">{{ $message }}</span> @enderror
 	<flux:memo-textarea resize="both" wire:model="form.body" wire:input.debounce.500ms="save"></flux:memo-textarea>

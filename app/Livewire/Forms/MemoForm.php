@@ -19,7 +19,7 @@ class MemoForm extends Form
     #[Locked]
     public ?int $id = null;
 
-    /** @var int new_key */
+    /** @var int 新規追加リストのキー */
     #[Locked]
     public ?int $new_key = null;
 

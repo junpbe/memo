@@ -38,9 +38,9 @@ new class extends Component
      * @param int $new_key 追加一覧のキー
      */
     #[On('remove-memo')]
-    public function remove(?int $new_key): void
+    public function remove(?int $new_key = null): void
     {
-        // 追加一覧にないものは何もしない
+        // 追加一覧にないものは何もしない（再レンダリングで消える）
         if (!isset($new_key)) {
             return;
         }
@@ -91,7 +91,7 @@ new class extends Component
 	</div>
 	<div class="flex flex-wrap gap-4">
 @foreach (array_reverse($add_list, true) as $key => $val)
-		<livewire:memo.rec :new_key="$key" wire:key="new_{{ $key }}" class="p-1 bg-white dark:bg-white/10" />
+		<livewire:memo.rec :new_key="$key" wire:key="new_{{ $key }}" class="p-1 bg-sky-100/50 dark:bg-sky-900/50" />
 @endforeach
 @foreach ($list as $rec)
 		<livewire:memo.rec :$rec wire:key="{{ $dummy_key }}_{{ $rec->id }}" class="p-1" />
