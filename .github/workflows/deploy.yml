@@ -56,6 +56,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Check Variables
+        run: |
+          echo "vars:${{ vars.AWS_REGION }}"
+          echo "env:${{ env.AWS_REGION }}"
+          echo "fixed env:${{ env.ECS_SERVICE }}"
+
       - name: Checkout
         uses: actions/checkout@v4
 
