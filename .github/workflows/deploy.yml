@@ -57,13 +57,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
-      - name: Check Variables
-        run: |
-          echo "vars:${{ vars.AWS_REGION }}"
-          echo "env:${{ env.AWS_REGION }}"
-          echo "fixed env:${{ env.ECS_SERVICE }}"
-          echo "fixed env:${ECS_SERVICE}"
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -96,7 +89,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/DockerFile
+          file: ./docker/Dockerfile
           platforms: linux/arm64
           push: true
           tags: |
