@@ -37,7 +37,7 @@ on:
         options: [development]
 
 env:
-  #AWS_REGION: ${{ vars.AWS_REGION }}          # set this to your preferred AWS region, e.g. us-west-1
+  AWS_REGION: ${{ vars.AWS_REGION }}          # set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}  # set this to your Amazon ECR repository name
   ECS_SERVICE: MY_ECS_SERVICE                 # set this to your Amazon ECS service name
   ECS_CLUSTER: MY_ECS_CLUSTER                 # set this to your Amazon ECS cluster name
@@ -55,12 +55,14 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     steps:
       - name: Check Variables
         run: |
           echo "vars:${{ vars.AWS_REGION }}"
           echo "env:${{ env.AWS_REGION }}"
           echo "fixed env:${{ env.ECS_SERVICE }}"
+          echo "fixed env:${ECS_SERVICE}"
 
       - name: Checkout
         uses: actions/checkout@v4
