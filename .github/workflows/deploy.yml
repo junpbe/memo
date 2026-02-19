@@ -91,6 +91,7 @@ jobs:
           context: .
           file: ./docker/Dockerfile
           platforms: linux/arm64
+          provenance: false
           push: true
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.event.inputs.environment }}-${{ github.sha }}
