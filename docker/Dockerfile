@@ -1,6 +1,8 @@
 FROM arm64v8/php:8.5-apache-trixie
 
 RUN apt-get update && apt-get install -y \
+        # phpのエクステンション用
+        libbz2-dev curl libcurl4-openssl-dev libonig-dev \
         # 開発用
         vim nano less \
     ;
@@ -16,8 +18,8 @@ RUN cd "${APP_DIR}/" && \
     rmdir /var/www/html && ln -s "${APP_DIR}/public" /var/www/html && \
     # php.ini追加
     mv "${APP_DIR}/docker/php.ini" "${PHP_INI_DIR}/php.ini" && \
-    # phpの拡張有効化
-    docker-php-ext-install bz2 curl fileinfo mbstring openssl && \
+    # phpのエクステンション有効化
+    docker-php-ext-install bz2 curl fileinfo mbstring && \
     # mod_rewrite有効化
     a2enmod rewrite && \
     :;
