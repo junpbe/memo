@@ -16,7 +16,7 @@ RUN chown -R www-data:www-data "${APP_DIR}/"
 RUN rmdir /var/www/html 
 RUN ln -s "${APP_DIR}/public" /var/www/html
     # php.ini追加
-RUN mv "${APP_DIR}/docker/php.ini" "{$PHP_INI_DIR}/php.ini"
+RUN mv "${APP_DIR}/docker/php.ini" "${PHP_INI_DIR}/php.ini"
     # mod_rewrite有効化
 RUN a2enmod rewrite
 
