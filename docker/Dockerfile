@@ -18,7 +18,7 @@ RUN cd "${APP_DIR}/" && \
     mv "${APP_DIR}/docker/php.ini" "{$PHP_INI_DIR}/php.ini" && \
     # mod_rewrite有効化
     a2enmod rewrite && \
-    ;
+    :;
 
 ENTRYPOINT ["docker-php-entrypoint"]
 CMD ["apache2-foreground"]
