@@ -9,13 +9,13 @@ RUN apt-get update && apt-get install -y \
 ARG APP_DIR=/var/app
 COPY ./ "${APP_DIR}/"
 
-RUN \
-    # php.ini追加
-    mv "${APP_DIR}/docker/php.ini" "{$PHP_INI_DIR}/php.ini" && \
+RUN cd "${APP_DIR}/" && \
+    # アプリケーションディレクトリのパーミッション調整
+    chown -r www-data:www-data "${APP_DIR}/" && \
     # ドキュメントルートをpublicのシンボリックリンクにする
     rmdir /var/www/html && ln -s "${APP_DIR}/public" /var/www/html && \
-    # パーミッション調整
-    chown www-data:www-data /var/www/html && \
+    # php.ini追加
+    mv "${APP_DIR}/docker/php.ini" "{$PHP_INI_DIR}/php.ini" && \
     # mod_rewrite有効化
     a2enmod rewrite && \
     ;
