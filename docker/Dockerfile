@@ -11,7 +11,7 @@ COPY ./ "${APP_DIR}/"
 
 RUN cd "${APP_DIR}/"
     # アプリケーションディレクトリのパーミッション調整
-RUN chown -r www-data:www-data "${APP_DIR}/"
+RUN chown -R www-data:www-data "${APP_DIR}/"
     # ドキュメントルートをpublicのシンボリックリンクにする
 RUN rmdir /var/www/html 
 RUN ln -s "${APP_DIR}/public" /var/www/html
