@@ -105,20 +105,20 @@ jobs:
 
       # --- 3. ECSへデプロイ ---
       # （タスク定義でlatestタグでpullするようにしているからやらなくてよい）3.1. 現在ECSサービスで実行されている最新のタスク定義をダウンロードする
-      #- name: Download current task definition
-      #  run: |
-      #    aws ecs describe-task-definition \
-      #      --task-definition ${{ env.ECS_TASK_DEFINITION }} \
-      #      --query taskDefinition > task-definition.json
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+            --query taskDefinition > task-definition.json
 
       # （タスク定義でlatestタグでpullするようにしているからやらなくてよい）3.2. 新しいイメージIDでタスク定義を更新
-      #- name: Fill in the new image ID in the Amazon ECS task definition
-      #  id: task-def
-      #  uses: aws-actions/amazon-ecs-render-task-definition@v1
-      #  with:
-      #    task-definition: task-definition.json
-      #    container-name: ${{ env.CONTAINER_NAME }}
-      #    image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
 
       # 3.3. 更新されたタスク定義をECSサービスにデプロイ
       - name: Deploy Amazon ECS task definition
