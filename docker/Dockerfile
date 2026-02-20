@@ -1,9 +1,9 @@
 FROM arm64v8/php:8.5-apache-trixie
 
-RUN apt-get update && apt-get install -y \
-        # 開発用
-        vim nano less \
-    ;
+#RUN apt-get update && apt-get install -y \
+#        # 開発用
+#        vim nano less \
+#    ;
 
 # アプリケーションディレクトリ
 ARG APP_DIR=/var/app
