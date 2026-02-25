@@ -64,14 +64,13 @@ RUN : \
  && rmdir /var/www/html && ln -s "${APP_DIR}/public" /var/www/html \
     # laravelのsqliteファイルをEFSで共有
  && ln -s /mnt/efs/laravel/database/database.sqlite "${APP_DIR}/database/database.sqlite" \
-    # php.ini追加
- && mv ./docker/php.ini "${PHP_INI_DIR}/php.ini" \
     # mod_rewrite有効化
  && a2enmod rewrite \
+    # php.ini追加
+ && mv ./docker/php.ini "${PHP_INI_DIR}/php.ini" \
+    # エントリーポイント
+ && mv ./docker/entrypoint.sh /usr/local/bin/ && chmod +x /usr/local/bin/entrypoint.sh \ 
     ;
-
-# エントリーポイント
-COPY docker/entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["apache2-foreground"]
