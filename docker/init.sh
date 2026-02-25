@@ -32,7 +32,7 @@ if [ "$INITIALIZE" = false ]; then
   exit 1
 fi
 
-cd "$(dirname "$0")/.."
+cd "${APP_DIR}"
 
 mkdir -p /mnt/efs/laravel/database
 

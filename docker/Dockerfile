@@ -51,7 +51,7 @@ RUN : \
 # --- 最終的な実行用イメージ ---
 FROM base
 
-ARG APP_DIR
+ENV APP_DIR="${APP_DIR}"
 WORKDIR "${APP_DIR}"
 
 # ビルド済みのアプリケーションディレクトリを丸ごとコピー
@@ -70,6 +70,8 @@ RUN : \
  && mv ./docker/php.ini "${PHP_INI_DIR}/php.ini" \
     # エントリーポイント
  && mv ./docker/entrypoint.sh /usr/local/bin/ && chmod +x /usr/local/bin/entrypoint.sh \ 
+    # 初期化シェル
+ && mv ./docker/init.sh /usr/local/bin/ && chmod +x /usr/local/bin/init.sh \ 
     ;
 
 ENTRYPOINT ["entrypoint.sh"]
