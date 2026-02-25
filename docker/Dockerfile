@@ -6,9 +6,10 @@ FROM arm64v8/php:8.5-apache-trixie AS base
 
 # パッケージ追加
 RUN apt-get update && apt-get install -y \
+        unzip
         # 開発用
         vim nano less \
- && docker-php-ext-install bcmath \
+ && docker-php-ext-install bcmath zip \
     ;
 
 
@@ -22,7 +23,7 @@ WORKDIR "${APP_DIR}"
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Node.js追加（Debian Trixie用）
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
  && apt-get install -y nodejs
 
 # composer依存関係のインストール（依存定義ファイルを先にコピーして、ソースコードが変わっても再インストールを防ぐ）
