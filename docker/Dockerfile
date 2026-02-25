@@ -61,7 +61,7 @@ RUN : \
     # ファイルのパーミッション調整
  && chown -R www-data:www-data ./ \
     # ドキュメントルートをpublicのシンボリックリンクにする
- && rmdir /var/www/html && ln -s ./public /var/www/html \
+ && rmdir /var/www/html && ln -s "${APP_DIR}/public" /var/www/html \
     # php.ini追加
  && mv ./docker/php.ini "${PHP_INI_DIR}/php.ini" \
     # mod_rewrite有効化
