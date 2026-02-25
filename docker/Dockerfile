@@ -41,8 +41,6 @@ COPY . .
 RUN : \
     # composer最適化
  && composer dump-autoload --optimize \
-    # laravel最適化
- && php artisan optimize \
     # アセットコンパイル
  && npm run build \
     ;
