@@ -6,7 +6,7 @@ FROM arm64v8/php:8.5-apache-trixie AS base
 
 # パッケージ追加
 RUN apt-get update && apt-get install -y \
-        unzip \
+        unzip libzip-dev \
         # 開発用
         vim nano less \
  && docker-php-ext-install bcmath zip \
