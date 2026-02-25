@@ -62,6 +62,8 @@ RUN : \
  && chown -R www-data:www-data ./ \
     # ドキュメントルートをpublicのシンボリックリンクにする
  && rmdir /var/www/html && ln -s "${APP_DIR}/public" /var/www/html \
+    # laravelのセッションファイルをEFSで共有
+ && rmdir "${APP_DIR}/storage/framework/sessions" && mkdir -p /mnt/efs/laravel/sessions && ln -s /mnt/efs/laravel/sessions "${APP_DIR}/storage/framework/sessions" \
     # php.ini追加
  && mv ./docker/php.ini "${PHP_INI_DIR}/php.ini" \
     # mod_rewrite有効化
