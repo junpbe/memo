@@ -71,7 +71,7 @@ RUN : \
     ;
 
 # エントリーポイント
-COPY entrypoint.sh /usr/local/bin/
+COPY docker/entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["apache2-foreground"]
