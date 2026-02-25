@@ -70,5 +70,8 @@ RUN : \
  && a2enmod rewrite \
     ;
 
-ENTRYPOINT ["docker-php-entrypoint"]
+# エントリーポイント
+COPY entrypoint.sh /usr/local/bin/
+
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["apache2-foreground"]
