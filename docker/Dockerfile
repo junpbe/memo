@@ -3,6 +3,7 @@ ARG APP_DIR=/var/app
 
 # --- Stage 1: Node.js でフロントエンドをビルド ---
 FROM node:20-slim AS frontend-builder
+ARG APP_DIR
 WORKDIR "${APP_DIR}"
 COPY package.json package-lock.json ./
 RUN npm install
@@ -22,6 +23,7 @@ RUN apt-get update && apt-get install -y \
 # composer追加
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+ARG APP_DIR
 WORKDIR "${APP_DIR}"
 
 # composer依存関係のインストール（依存定義ファイルを先にコピーして、ソースコードが変わっても再インストールを防ぐ）
