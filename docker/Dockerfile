@@ -32,20 +32,20 @@ COPY . .
 # フロントエンドのビルド成果物 (public/build) をStage 1からコピー
 COPY --from=frontend-builder /app/public/build ./public/build
 
-RUN \
+RUN : \
     # composer最適化
-    composer dump-autoload --optimize && \
+ && composer dump-autoload --optimize \
     # laravel最適化
-    php artisan optimize && \
+ && php artisan optimize \
     # ファイルのパーミッション調整
-    chown -R www-data:www-data ./ && \
+ && chown -R www-data:www-data ./ \
     # ドキュメントルートをpublicのシンボリックリンクにする
-    rmdir /var/www/html && ln -s ./public /var/www/html && \
+ && rmdir /var/www/html && ln -s ./public /var/www/html \
     # php.ini追加
-    mv ./docker/php.ini "${PHP_INI_DIR}/php.ini" && \
+ && mv ./docker/php.ini "${PHP_INI_DIR}/php.ini" \
     # mod_rewrite有効化
-    a2enmod rewrite && \
-    :;
+ && a2enmod rewrite \
+    ;
 
 ENTRYPOINT ["docker-php-entrypoint"]
 CMD ["apache2-foreground"]
