@@ -62,6 +62,8 @@ RUN : \
  && chown -R www-data:www-data ./ \
     # ドキュメントルートをpublicのシンボリックリンクにする
  && rmdir /var/www/html && ln -s "${APP_DIR}/public" /var/www/html \
+    # laravelのsqliteファイルをEFSで共有
+ && ln -s /mnt/efs/laravel/database/database.sqlite "${APP_DIR}/database/database.sqlite" \
     # php.ini追加
  && mv ./docker/php.ini "${PHP_INI_DIR}/php.ini" \
     # mod_rewrite有効化
