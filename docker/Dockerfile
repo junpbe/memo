@@ -51,6 +51,7 @@ RUN : \
 # --- 最終的な実行用イメージ ---
 FROM base
 
+ARG APP_DIR
 ENV APP_DIR="${APP_DIR}"
 WORKDIR "${APP_DIR}"
 
