@@ -13,6 +13,7 @@ FROM arm64v8/php:8.5-apache-trixie
 RUN apt-get update && apt-get install -y \
         # 開発用
         vim nano less \
+ && docker-php-ext-install bcmath \
     ;
 
 # composer追加
