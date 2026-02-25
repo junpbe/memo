@@ -9,5 +9,8 @@ fi
 # laravel最適化（env複合化後に実行しないとenvの内容が反映されない）
 php artisan optimize
 
+# ファイルのパーミッション調整
+chown -R www-data:www-data ./
+
 # 元のentrypointを実行
 exec docker-php-entrypoint "$@"

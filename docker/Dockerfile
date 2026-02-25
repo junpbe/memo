@@ -57,8 +57,6 @@ WORKDIR "${APP_DIR}"
 COPY --from=builder "${APP_DIR}" "${APP_DIR}"
 
 RUN : \
-    # ファイルのパーミッション調整
- && chown -R www-data:www-data ./ \
     # ドキュメントルートをpublicのシンボリックリンクにする
  && rmdir /var/www/html && ln -s "${APP_DIR}/public" /var/www/html \
     # laravelのsqliteファイルをEFSで共有
