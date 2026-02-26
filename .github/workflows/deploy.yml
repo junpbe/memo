@@ -37,14 +37,13 @@ on:
         options: [development]
 
 env:
-  AWS_REGION: ${{ vars.AWS_REGION }}          # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}  # set this to your Amazon ECR repository name
-  ECS_SERVICE: MY_ECS_SERVICE                 # set this to your Amazon ECS service name
-  ECS_CLUSTER: MY_ECS_CLUSTER                 # set this to your Amazon ECS cluster name
-  ECS_TASK_DEFINITION: MY_ECS_TASK_DEFINITION # set this to the path to your Amazon ECS task definition
-                                               # file, e.g. .aws/task-definition.json
-  CONTAINER_NAME: MY_CONTAINER_NAME           # set this to the name of the container in the
-                                               # containerDefinitions section of your task definition
+  AWS_REGION: ${{ vars.AWS_REGION }}                   # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}           # set this to your Amazon ECR repository name
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}                 # set this to your Amazon ECS service name
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}                 # set this to your Amazon ECS cluster name
+  ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION }} # set this to your Amazon ECS task definition name
+  CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}           # set this to the name of the container in the
+                                                        # containerDefinitions section of your task definition
 
   AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
 
@@ -55,13 +54,8 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     steps:
-      - name: Check Variables
-        run: |
-          echo "vars:${{ vars.AWS_REGION }}"
-          echo "env:${{ env.AWS_REGION }}"
-          echo "fixed env:${{ env.ECS_SERVICE }}"
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -94,11 +88,12 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/DockerFile
+          file: ./docker/Dockerfile
           platforms: linux/arm64
+          provenance: false
           push: true
           tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.event.inputs.environment }}-${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
 
           # --- キャッシュ設定 ---
@@ -108,21 +103,7 @@ jobs:
           # mode=max は中間レイヤーもすべて保存する設定（再利用性が高い）
           cache-to: type=gha,mode=max
 
-      # --- 3. ECSへデプロイ ---
-      # 3.1. 新しいイメージIDでタスク定義を更新
-      #- name: Fill in the new image ID in the Amazon ECS task definition
-      #  id: task-def
-      #  uses: aws-actions/amazon-ecs-render-task-definition@v1
-      #  with:
-      #    task-definition: ${{ env.ECS_TASK_DEFINITION }}
-      #    container-name: ${{ env.CONTAINER_NAME }}
-      #    image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-
-      # 3.2. 更新されたタスク定義をECSサービスにデプロイ
-      #- name: Deploy Amazon ECS task definition
-      #  uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-      #  with:
-      #    task-definition: ${{ steps.task-def.outputs.task-definition }}
-      #    service: ${{ env.ECS_SERVICE }}
-      #    cluster: ${{ env.ECS_CLUSTER }}
-      #    wait-for-service-stability: true # デプロイ完了まで待機（正常起動を確認）
+      # --- 3. ECSの強制デプロイ実行 ---
+      - name: Update service
+        run: |
+          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE }} --force-new-deployment
