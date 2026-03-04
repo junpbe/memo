@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Integrated Application Stack: Cluster, Task, Service, and TG with Automated Naming"
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: my-project
+    Description: Project name used for naming and importing
+
+  # イメージURL
+  ImageUri:
+    Type: String
+    Description: ECR Repository Image URI (e.g., 123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/repo:latest)
+
+  # ALBに許可するIP（全公開しないように自分のマシンのIPを入れること推奨）
+  AllowedIp:
+    Type: String
+    Default: "0.0.0.0/32"
+    Description: IP address range allowed to access the ALB
+
+Resources:
+  # --- 1. ECS クラスター ---
+  ECSCluster:
+    Type: "AWS::ECS::Cluster"
+    Properties:
+      ClusterName: !Sub "${ProjectName}-cluster"
+      CapacityProviders: ["FARGATE", "FARGATE_SPOT"]
+      ClusterSettings: [{ Name: "containerInsights", Value: "disabled" }]
+      Configuration:
+        ExecuteCommandConfiguration: { Logging: "DEFAULT" }
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${ProjectName}-cluster"
+
+  # --- 2. セキュリティグループ ---
+  # ALB用
+  EC2SecurityGroupALB:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "${ProjectName}-alb-sg"
+      GroupDescription: !Sub "ALB SG for ${ProjectName}"
+      VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPCID" }
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: !Ref AllowedIp }
+
+  # ECSタスク用
+  EC2SecurityGroupECS:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "${ProjectName}-ecs-sg"
+      GroupDescription: !Sub "ECS SG for ${ProjectName}"
+      VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPCID" }
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, SourceSecurityGroupId: !Ref EC2SecurityGroupALB }
+      SecurityGroupEgress:
+        - { IpProtocol: "-1", FromPort: -1, ToPort: -1, CidrIp: "0.0.0.0/0" }
+
+  # --- 3. タスク定義 ---
+  ECSTaskDefinition:
+    Type: "AWS::ECS::TaskDefinition"
+    Properties:
+      Family: !Ref ProjectName
+      Cpu: "256"
+      Memory: "512"
+      NetworkMode: "awsvpc"
+      RequiresCompatibilities: ["FARGATE"]
+      RuntimePlatform: { OperatingSystemFamily: "LINUX", CpuArchitecture: "ARM64" }
+      TaskRoleArn: { "Fn::ImportValue": !Sub "${ProjectName}-TaskRoleArn" }
+      ExecutionRoleArn: { "Fn::ImportValue": !Sub "${ProjectName}-ExeRoleArn" }
+      ContainerDefinitions:
+        - Name: "php-apache"
+          Image: !Ref ImageUri
+          Essential: true
+          PortMappings:
+            - { ContainerPort: 80, Protocol: "tcp", Name: "php-apache-80-tcp" }
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-group: !Sub "/ecs/${ProjectName}"
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: "ecs"
+              awslogs-create-group: "true"
+          Secrets:
+            - Name: "LARAVEL_ENV_ENCRYPTION_KEY"
+              ValueFrom: { "Fn::ImportValue": !Sub "${ProjectName}-SecretArn" }
+          MountPoints:
+            - { SourceVolume: "efs", ContainerPath: "/mnt/efs", ReadOnly: false }
+          Environment:
+            - { Name: "APP_ENV", Value: "dev" }
+      Volumes:
+        - Name: "efs"
+          EFSVolumeConfiguration:
+            FilesystemId: { "Fn::ImportValue": !Sub "${ProjectName}-EfsId" }
+            TransitEncryption: "ENABLED"
+            AuthorizationConfig:
+              AccessPointId: { "Fn::ImportValue": !Sub "${ProjectName}-AccessPointId" }
+
+  # --- 4. ターゲットグループ ---
+  ALBTargetGroup:
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    Properties:
+      Name: !Sub "${ProjectName}-tg"
+      VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPCID" }
+      Protocol: "HTTP"
+      Port: 80
+      TargetType: "ip"
+      HealthCheckPath: "/up"
+      Matcher: { HttpCode: "200" }
+      TargetGroupAttributes:
+        - { Key: "deregistration_delay.timeout_seconds", Value: "300" }
+
+  # --- 5. ECS サービス ---
+  ECSService:
+    Type: "AWS::ECS::Service"
+    Properties:
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref ECSTaskDefinition
+      ServiceName: !Sub "${ProjectName}-service"
+      SchedulingStrategy: "REPLICA"
+      DesiredCount: 1
+      AvailabilityZoneRebalancing: "ENABLED"
+      LaunchType: "FARGATE"
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: "DISABLED"
+          SecurityGroups: [!Ref EC2SecurityGroupECS]
+          Subnets: !Split [",", !ImportValue { "Fn::Sub": "${ProjectName}-PrivateSubnets" }]
+      PlatformVersion: "LATEST"
+      DeploymentConfiguration:
+        DeploymentCircuitBreaker: { Enable: true, Rollback: true }
+        Strategy: "ROLLING"
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      LoadBalancers:
+        - ContainerName: "php-apache"
+          ContainerPort: 80
+          TargetGroupArn: !Ref ALBTargetGroup
+      EnableExecuteCommand: true
+
+Outputs:
+  TargetGroupArn:
+    Value: !Ref ALBTargetGroup
+    Export: { Name: !Sub "${ProjectName}-TargetGroupArn" }
+  ClusterId:
+    Value: !Ref ECSCluster
+    Export: { Name: !Sub "${ProjectName}-ClusterId" }
+  AlbSecurityGroup:
+    Value: !Ref EC2SecurityGroupALB
+    Export:
+      Name: !Sub "${ProjectName}-AlbSecurityGroup"

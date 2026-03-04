@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Shared Resources Stack (IAM, EFS, SecretsManager)"
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: my-project
+    Description: Project name for resource naming and export prefix
+
+  # laravelのenvファイルの暗号化キーをパラメータとして定義（シークレットマネージャで管理）
+  EncryptionKeyValue:
+    Type: String
+    NoEcho: true  # これにより入力値が **** で隠されます
+    Description: Enter the encryption key for the environment file
+
+Resources:
+  # --- IAM Roles ---
+  # ECS Task Role (アプリケーション自体が利用する権限)
+  IAMRoleEcstaskrole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "${ProjectName}-ecs-task-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: "Allow"
+            Principal: {Service: "ecs-tasks.amazonaws.com"}
+      ManagedPolicyArns:
+        - !Ref IAMManagedPolicy
+
+  IAMManagedPolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub "${ProjectName}-ecs-task-role-policy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: ["ssmmessages:*", "logs:*"]
+            Resource: "*"
+
+  # ECS Task Execution Role (Fargateがログ送信やイメージ取得で利用する権限)
+  IAMRoleEcstaskexerole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "${ProjectName}-ecs-task-exe-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: "Allow"
+            Principal: {Service: "ecs-tasks.amazonaws.com"}
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+        - "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+        - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+
+  # --- EFS ---
+  EFSFileSystem:
+    Type: "AWS::EFS::FileSystem"
+    Properties:
+      PerformanceMode: "generalPurpose"
+      ThroughputMode: "elastic"
+      LifecyclePolicies:
+        - TransitionToIA: "AFTER_30_DAYS"
+        - TransitionToArchive: "AFTER_90_DAYS"
+      FileSystemTags:
+        - Key: "Name"
+          Value: !Sub "${ProjectName}-efs"
+
+  EFSAccessPoint:
+    Type: "AWS::EFS::AccessPoint"
+    Properties:
+      FileSystemId: !Ref EFSFileSystem
+      RootDirectory:
+        Path: "/memo"
+        CreationInfo: {OwnerGid: "33", OwnerUid: "33", Permissions: "0755"}
+      PosixUser: {Uid: "33", Gid: "33"}
+
+  # --- Secrets Manager ---
+  SecretsManagerSecret:
+    Type: "AWS::SecretsManager::Secret"
+    Properties:
+      Name: !Sub "${ProjectName}/env_encryption_key"
+      # パラメータで受け取った値をセット
+      SecretString: !Ref EncryptionKeyValue
+
+Outputs:
+  TaskRoleArn:
+    Value: !GetAtt IAMRoleEcstaskrole.Arn
+    Export: 
+      Name: !Sub "${ProjectName}-TaskRoleArn"
+  ExeRoleArn:
+    Value: !GetAtt IAMRoleEcstaskexerole.Arn
+    Export: 
+      Name: !Sub "${ProjectName}-ExeRoleArn"
+  EfsId:
+    Value: !Ref EFSFileSystem
+    Export: 
+      Name: !Sub "${ProjectName}-EfsId"
+  AccessPointId:
+    Value: !Ref EFSAccessPoint
+    Export: 
+      Name: !Sub "${ProjectName}-AccessPointId"
+  SecretArn:
+    Value: !Ref SecretsManagerSecret
+    Export: 
+      Name: !Sub "${ProjectName}-SecretArn"
