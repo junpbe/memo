@@ -90,6 +90,31 @@ Resources:
         - Key: "Name"
           Value: !Sub "${ProjectName}-efs-ap"
 
+  # --- EFS セキュリティグループ (器のみ) ---
+  EFSSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Sub "${ProjectName}-efs-sg"
+      GroupDescription: "Security Group for EFS"
+      VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-VPCID" }
+
+  # --- EFS マウントターゲット (各AZに作成) ---
+  # プライベートサブネット1(AZ-a)用
+  EFSMountTarget1:
+    Type: "AWS::EFS::MountTarget"
+    Properties:
+      FileSystemId: !Ref EFSFileSystem
+      SubnetId: !Select [ 0, !Split [",", !ImportValue { "Fn::Sub": "${ProjectName}-PrivateSubnets" } ] ]
+      SecurityGroups: [ !Ref EFSSecurityGroup ]
+
+  # プライベートサブネット2(AZ-c)用
+  EFSMountTarget2:
+    Type: "AWS::EFS::MountTarget"
+    Properties:
+      FileSystemId: !Ref EFSFileSystem
+      SubnetId: !Select [ 1, !Split [",", !ImportValue { "Fn::Sub": "${ProjectName}-PrivateSubnets" } ] ]
+      SecurityGroups: [ !Ref EFSSecurityGroup ]
+
   # --- Secrets Manager ---
   SecretsManagerSecret:
     Type: "AWS::SecretsManager::Secret"
@@ -115,6 +140,10 @@ Outputs:
     Value: !Ref EFSAccessPoint
     Export: 
       Name: !Sub "${ProjectName}-AccessPointId"
+  EFSSecurityGroupId:
+    Value: !Ref EFSSecurityGroup
+    Export: 
+      Name: !Sub "${ProjectName}-EFSSecurityGroupId"
   SecretArn:
     Value: !Ref SecretsManagerSecret
     Export: 

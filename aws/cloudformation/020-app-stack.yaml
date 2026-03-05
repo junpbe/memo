@@ -65,7 +65,25 @@ Resources:
       SecurityGroupEgress:
         - { IpProtocol: "-1", FromPort: -1, ToPort: -1, CidrIp: "0.0.0.0/0" }
 
+  # EFS側のアクセス許可
+  EfsIngressRule:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      GroupId: { "Fn::ImportValue": !Sub "${ProjectName}-EFSSecurityGroupId" }
+      IpProtocol: tcp
+      FromPort: 2049
+      ToPort: 2049
+      SourceSecurityGroupId: !Ref EC2SecurityGroupECS
+
   # --- 3. タスク定義 ---
+  # ロググループ作成
+  ECSLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/ecs/${ProjectName}"
+      RetentionInDays: 7
+
+  # タスク定義
   ECSTaskDefinition:
     Type: "AWS::ECS::TaskDefinition"
     Properties:
@@ -86,7 +104,7 @@ Resources:
           LogConfiguration:
             LogDriver: "awslogs"
             Options:
-              awslogs-group: !Sub "/ecs/${ProjectName}"
+              awslogs-group: !Ref ECSLogGroup
               awslogs-region: !Ref "AWS::Region"
               awslogs-stream-prefix: "ecs"
               awslogs-create-group: "true"
