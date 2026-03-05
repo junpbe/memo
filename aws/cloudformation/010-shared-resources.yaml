@@ -86,6 +86,9 @@ Resources:
         Path: "/memo"
         CreationInfo: {OwnerGid: "33", OwnerUid: "33", Permissions: "0755"}
       PosixUser: {Uid: "33", Gid: "33"}
+      AccessPointTags:
+        - Key: "Name"
+          Value: !Sub "${ProjectName}-efs-ap"
 
   # --- Secrets Manager ---
   SecretsManagerSecret:

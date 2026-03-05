@@ -127,7 +127,8 @@ Resources:
       TaskDefinition: !Ref ECSTaskDefinition
       ServiceName: !Sub "${ProjectName}-service"
       SchedulingStrategy: "REPLICA"
-      DesiredCount: 1
+      # 作成時はいったんコンテナ数を0にしておく
+      DesiredCount: 0
       AvailabilityZoneRebalancing: "ENABLED"
       LaunchType: "FARGATE"
       NetworkConfiguration:
@@ -141,10 +142,11 @@ Resources:
         Strategy: "ROLLING"
         MaximumPercent: 200
         MinimumHealthyPercent: 100
-      LoadBalancers:
-        - ContainerName: "php-apache"
-          ContainerPort: 80
-          TargetGroupArn: !Ref ALBTargetGroup
+      # ALBは後で立てるので、作成時はコメントアウトしておく（作成後、コメントアウトを外してスタックを更新する）
+      #LoadBalancers:
+      #  - ContainerName: "php-apache"
+      #    ContainerPort: 80
+      #    TargetGroupArn: !Ref ALBTargetGroup
       EnableExecuteCommand: true
 
 Outputs:
@@ -158,3 +160,6 @@ Outputs:
     Value: !Ref EC2SecurityGroupALB
     Export:
       Name: !Sub "${ProjectName}-AlbSecurityGroup"
+  ServiceName:
+    Value: !GetAtt ECSService.Name
+    Export: { Name: !Sub "${ProjectName}-ServiceName" }
