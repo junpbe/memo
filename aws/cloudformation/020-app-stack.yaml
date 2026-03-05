@@ -18,6 +18,16 @@ Parameters:
     Default: "0.0.0.0/32"
     Description: IP address range allowed to access the ALB
 
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Configuration
+        Parameters:
+          - ProjectName
+          - ImageUri
+          - AllowedIp
+
 Resources:
   # --- 1. ECS クラスター ---
   ECSCluster:

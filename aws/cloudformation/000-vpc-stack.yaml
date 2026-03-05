@@ -28,6 +28,19 @@ Parameters:
     Type: String
     Default: 10.0.12.0/24
 
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Configuration
+        Parameters:
+          - ProjectName
+          - VpcCidr
+          - PublicSubnet1Cidr
+          - PublicSubnet2Cidr
+          - PrivateSubnet1Cidr
+          - PrivateSubnet2Cidr
+
 Resources:
   # VPC 本体
   VPC:

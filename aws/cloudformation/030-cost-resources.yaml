@@ -5,6 +5,15 @@ Parameters:
   ProjectName:
     Type: String
     Default: my-project
+    Description: Project name used for naming and importing
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Configuration
+        Parameters:
+          - ProjectName
 
 Resources:
   # --- NAT Gateway 関連 ---

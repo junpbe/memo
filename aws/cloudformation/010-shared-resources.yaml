@@ -5,13 +5,22 @@ Parameters:
   ProjectName:
     Type: String
     Default: my-project
-    Description: Project name for resource naming and export prefix
+    Description: Project name used for naming and importing
 
   # laravelのenvファイルの暗号化キーをパラメータとして定義（シークレットマネージャで管理）
   EncryptionKeyValue:
     Type: String
     NoEcho: true  # これにより入力値が **** で隠されます
     Description: Enter the encryption key for the environment file
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Configuration
+        Parameters:
+          - ProjectName
+          - EncryptionKeyValue
 
 Resources:
   # --- IAM Roles ---
