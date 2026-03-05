@@ -147,6 +147,7 @@ Resources:
       SchedulingStrategy: "REPLICA"
       # 作成時はいったんコンテナ数を0にしておく
       DesiredCount: 0
+      HealthCheckGracePeriodSeconds: 60
       AvailabilityZoneRebalancing: "ENABLED"
       LaunchType: "FARGATE"
       NetworkConfiguration:
