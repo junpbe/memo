@@ -37,36 +37,13 @@ Resources:
         - Key: Name
           Value: !Sub ${ProjectName}-nat-gw
 
-  # --- プライベート用ルートテーブルの変更 ---
-  PrivateRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !ImportValue { "Fn::Sub": "${ProjectName}-VPCID" }
-      Tags:
-        - Key: Name
-          Value: !Sub ${ProjectName}-private-rt
-
-  # デフォルトルートをNAT Gatewayに向ける
+  # プライベート用ルートテーブルの変更（NAT Gatewayに向ける）
   PrivateRoute:
     Type: AWS::EC2::Route
     Properties:
-      RouteTableId: !Ref PrivateRouteTable
+      RouteTableId: !ImportValue { "Fn::Sub": "${ProjectName}-PrivateRouteTableId" }
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NatGateway
-
-  # プライベートサブネットをこのルートテーブルに関連付け
-  # (VPCスタックで作成したサブネットIDを順に適用)
-  PrivateSubnet1Association:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Select [ 0, !Split [",", !ImportValue { "Fn::Sub": "${ProjectName}-PrivateSubnets" } ] ]
-      RouteTableId: !Ref PrivateRouteTable
-
-  PrivateSubnet2Association:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Select [ 1, !Split [",", !ImportValue { "Fn::Sub": "${ProjectName}-PrivateSubnets" } ] ]
-      RouteTableId: !Ref PrivateRouteTable
 
   # --- ALB (Application Load Balancer) 関連 ---
   LoadBalancer:

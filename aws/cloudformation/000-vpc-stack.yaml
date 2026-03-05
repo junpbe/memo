@@ -74,7 +74,6 @@ Resources:
       VpcId: !Ref VPC
       AvailabilityZone: !Select [ 0, !GetAZs "" ]
       CidrBlock: !Ref PublicSubnet1Cidr
-      MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
           Value: !Sub ${ProjectName}-public-1
@@ -85,7 +84,6 @@ Resources:
       VpcId: !Ref VPC
       AvailabilityZone: !Select [ 1, !GetAZs "" ]
       CidrBlock: !Ref PublicSubnet2Cidr
-      MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
           Value: !Sub ${ProjectName}-public-2
@@ -110,7 +108,7 @@ Resources:
         - Key: Name
           Value: !Sub ${ProjectName}-private-2
 
-  # --- ルートテーブル (Public) ---
+  # --- ルートテーブル ---
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -139,8 +137,27 @@ Resources:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref PublicRouteTable
 
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-private-rt
+
+  PrivateSubnet1Association:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet2Association:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2
+      RouteTableId: !Ref PrivateRouteTable
+
 Outputs:
-  # 他のスタックで参照するためのエクスポート設定
   VpcId:
     Value: !Ref VPC
     Export:
@@ -155,3 +172,8 @@ Outputs:
     Value: !Join [ ",", [ !Ref PrivateSubnet1, !Ref PrivateSubnet2 ] ]
     Export:
       Name: !Sub ${ProjectName}-PrivateSubnets
+
+  PrivateRouteTableId:
+    Value: !Ref PrivateRouteTable
+    Export:
+      Name: !Sub ${ProjectName}-PrivateRouteTableId
