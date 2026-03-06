@@ -4,7 +4,7 @@ Description: 'Cost-sensitive resources: NAT Gateway and ALB'
 Parameters:
   ProjectName:
     Type: String
-    Default: my-project
+    Default: memo
     Description: Project name used for naming and importing
 
 Metadata:

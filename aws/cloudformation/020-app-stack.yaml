@@ -4,7 +4,7 @@ Description: "Integrated Application Stack: Cluster, Task, Service, and TG with 
 Parameters:
   ProjectName:
     Type: String
-    Default: my-project
+    Default: memo
     Description: Project name used for naming and importing
 
   # イメージURL

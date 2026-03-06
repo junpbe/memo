@@ -4,7 +4,7 @@ Description: 'Base VPC Stack: 2AZ Public/Private Subnets'
 Parameters:
   ProjectName:
     Type: String
-    Default: my-project
+    Default: memo
     Description: Project name for export prefix
 
   VpcCidr:
