@@ -63,7 +63,7 @@ new class extends Component
      */
     public function refreshList(): void
     {
-        $this->list = Auth::user()->memos;
+        $this->list = Auth::user()->memos()->orderByDesc('id')->get();
 
         // 一覧を更新したら、すべての更新日時を結合してハッシュ化したものを生成し、強制的に再レンダリングさせる（全データの更新日時が変わらなければ再レンダリングしない）
         $this->dummy_key = md5($this->list->pluck('updated_at')
