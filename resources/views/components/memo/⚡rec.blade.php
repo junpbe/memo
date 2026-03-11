@@ -83,15 +83,19 @@ new class extends Component
      */
     public function reload(): void
     {
+        // 新規作成中データの場合は何もしない
         if (!$this->form->modelExists()) {
             return;
         }
 
         $model = Memo::find($this->form->id);
         if (!isset($model)) {
+            // DBに存在しない場合は削除処理を呼び出し再レンダリングで消す
+            $this->remove();
             return;
         }
 
+        // データ更新
         $this->form->setModel($model);
     }
 

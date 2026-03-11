@@ -2,11 +2,11 @@
 
 namespace App\Exceptions;
 
-use Exception;
+use RuntimeException;
 
 /**
  * モデルが他の人に更新されていた場合に発生する例外。
  */
-class ModelNotLatestException extends Exception
+class ModelNotLatestException extends RuntimeException
 {
 }
