@@ -3,11 +3,13 @@
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 
 new class extends Component
 {
     /** @var array 追加一覧 */
+    #[Locked]
     public array $add_list = [];
 
     /** @var \Illuminate\Database\Eloquent\Collection 一覧（新規追加データがリアルタイムで出てきてしまうのでComputed Propertiesは使わず、ユーザが更新ボタンを押したときだけ更新） */
