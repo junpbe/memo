@@ -115,6 +115,7 @@ new class extends Component
 };
 ?>
 
+<div>
 <div {{ $attributes->class(['invisible' => $removed]) }} wire:transition>
 	<x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
 	@error('form.body') <span class="error">{{ $message }}</span> @enderror
@@ -122,4 +123,5 @@ new class extends Component
 	<flux:button square wire:click="reload"><flux:icon.arrow-path /></flux:button>
 	<flux:button square wire:click="remove"><flux:icon.trash /></flux:button>
 	<x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
+</div>
 </div>
