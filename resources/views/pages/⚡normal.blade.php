@@ -129,7 +129,7 @@ new class extends Component
 		<div class="w-64 flex-initial">
 			<x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
 			<flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
-				<flux:text class="whitespace-pre-wrap">{{ $rec->body }}</flux:text>
+				<flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->body }}</flux:text>
 			</flux:card>
 		</div>
 @endforeach
