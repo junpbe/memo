@@ -13,6 +13,10 @@ new class extends Component
     /** @var \App\Livewire\Forms\MemoForm フォーム */
     public MemoForm $form;
 
+    /** @var int 新規追加リストのキー */
+    #[Locked]
+    public ?int $new_key = null;
+
     /** @var bool 削除アクションを実行した瞬間だけtrueにして親リストが更新されるまで非表示にする */
     #[Locked]
     public bool $removed = false;
@@ -33,7 +37,7 @@ new class extends Component
 
         // 新規追加のリストのキーがある場合は新規追加
         if (isset($new_key)) {
-            $this->form->new_key = $new_key;
+            $this->new_key = $new_key;
             return;
         }
 
@@ -75,7 +79,7 @@ new class extends Component
         $this->removed = true;
 
         // イベント発行（新規データの場合新規追加リストのキーを渡す。そうでない場合はnullを渡すことになるが特に意味は無く、親再レンダリングで消える）
-        $this->dispatch('removed-memo', $this->form->new_key);
+        $this->dispatch('removed-memo', $this->new_key);
     }
 
     /**

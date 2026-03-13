@@ -19,10 +19,6 @@ class MemoForm extends Form
     #[Locked]
     public ?int $id = null;
 
-    /** @var int 新規追加リストのキー */
-    #[Locked]
-    public ?int $new_key = null;
-
     /** @var \Carbon\CarbonImmutable updated_at */
     #[Locked]
     public ?CarbonImmutable $updated_at = null;
