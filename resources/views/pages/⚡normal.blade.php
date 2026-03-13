@@ -32,7 +32,11 @@ new class extends Component
      */
     public function create(): void
     {
-        //TODO　追加処理
+        // 念のためフォームをリセットする
+        $this->form->reset();
+        $this->form->resetErrorBag();
+
+        Flux::modal('edit')->show();
     }
 
     /**
@@ -59,6 +63,7 @@ new class extends Component
     {
         // フォームをリセットする
         $this->form->reset();
+        $this->form->resetErrorBag();
     }
 
     /**
@@ -121,7 +126,7 @@ new class extends Component
 	</div>
 	<div class="flex flex-wrap gap-4">
 @foreach ($this->list as $rec)
-		<div>
+		<div class="w-64 flex-initial">
 			<x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
 			<flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
 				<flux:text class="whitespace-pre-wrap">{{ $rec->body }}</flux:text>
@@ -130,23 +135,23 @@ new class extends Component
 @endforeach
 	</div>
 	<flux:modal name="edit" class="w-full lg:max-w-5/10 max-w-9/10 dark:backdrop:bg-black/80!" wire:close="closeEdit" :dismissible="false">
-@isset($form->id)
 		<x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
 		<x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
 		@error('form.body') <span class="error">{{ $message }}</span> @enderror
 		<div class="mt-5">
-			<textarea name="body" class="w-full resize outline-none" rows="10" wire:model="form.body"></textarea>
+			<textarea name="body" class="w-full resize outline-none" rows="10" wire:model.live.debounce.500ms="form.body"></textarea>
 		</div>
 		<div class="flex justify-between">
 			<flux:modal.close>
-				<flux:button wire:close="closeEdit">キャンセル</flux:button>
+				<flux:button variant="ghost" wire:close="closeEdit">閉じる</flux:button>
 			</flux:modal.close>
+@if($form->modelExists())
 			<flux:modal.trigger name="delete">
 				<flux:button variant="danger">削除</flux:button>
 			</flux:modal.trigger>
-			<flux:button wire:click="save">保存</flux:button>
+@endif
+			<flux:button variant="primary" wire:click="save">保存</flux:button>
 		</div>
-@endisset
 	</flux:modal>
 	<flux:modal name="delete" class="min-w-[22rem] dark:backdrop:bg-black/80!">
 		<div class="space-y-6">
