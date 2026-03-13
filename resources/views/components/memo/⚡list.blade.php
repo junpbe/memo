@@ -3,18 +3,17 @@
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 
 new class extends Component
 {
     /** @var array 追加一覧 */
+    #[Locked]
     public array $add_list = [];
 
-    /** @var \Illuminate\Database\Eloquent\Collection 一覧 */
+    /** @var \Illuminate\Database\Eloquent\Collection 一覧（新規追加データがリアルタイムで出てきてしまうのでComputed Propertiesは使わず、ユーザが更新ボタンを押したときだけ更新） */
     public Collection $list;
-
-    /** @var string 更新ボタンで更新させるためのダミーキー */
-    public string $dummy_key = '';
 
     /**
      * mount.
@@ -64,11 +63,6 @@ new class extends Component
     public function refreshList(): void
     {
         $this->list = Auth::user()->memos()->orderByDesc('id')->get();
-
-        // 一覧を更新したら、すべての更新日時を結合してハッシュ化したものを生成し、強制的に再レンダリングさせる（全データの更新日時が変わらなければ再レンダリングしない）
-        $this->dummy_key = md5($this->list->pluck('updated_at')
-            ->map(fn ($updated_at) => $updated_at->format('YmdHisu'))
-            ->implode(''));
     }
 };
 ?>
@@ -83,7 +77,7 @@ new class extends Component
 		<livewire:memo.rec :new_key="$key" wire:key="new_{{ $key }}" class="p-1 bg-sky-100/50 dark:bg-sky-900/50" />
 @endforeach
 @foreach ($list as $rec)
-		<livewire:memo.rec :$rec wire:key="{{ $dummy_key }}_{{ $rec->id }}" class="p-1" />
+		<livewire:memo.rec :$rec wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}" class="p-1" />
 @endforeach
 	</div>
 </div>

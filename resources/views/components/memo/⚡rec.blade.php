@@ -13,6 +13,10 @@ new class extends Component
     /** @var \App\Livewire\Forms\MemoForm フォーム */
     public MemoForm $form;
 
+    /** @var int 新規追加リストのキー */
+    #[Locked]
+    public ?int $new_key = null;
+
     /** @var bool 削除アクションを実行した瞬間だけtrueにして親リストが更新されるまで非表示にする */
     #[Locked]
     public bool $removed = false;
@@ -33,7 +37,7 @@ new class extends Component
 
         // 新規追加のリストのキーがある場合は新規追加
         if (isset($new_key)) {
-            $this->form->new_key = $new_key;
+            $this->new_key = $new_key;
             return;
         }
 
@@ -75,7 +79,7 @@ new class extends Component
         $this->removed = true;
 
         // イベント発行（新規データの場合新規追加リストのキーを渡す。そうでない場合はnullを渡すことになるが特に意味は無く、親再レンダリングで消える）
-        $this->dispatch('removed-memo', $this->form->new_key);
+        $this->dispatch('removed-memo', $this->new_key);
     }
 
     /**
@@ -83,15 +87,19 @@ new class extends Component
      */
     public function reload(): void
     {
+        // 新規作成中データの場合は何もしない
         if (!$this->form->modelExists()) {
             return;
         }
 
         $model = Memo::find($this->form->id);
         if (!isset($model)) {
+            // DBに存在しない場合は削除処理を呼び出し再レンダリングで消す
+            $this->remove();
             return;
         }
 
+        // データ更新
         $this->form->setModel($model);
     }
 
@@ -111,6 +119,7 @@ new class extends Component
 };
 ?>
 
+<div>
 <div {{ $attributes->class(['invisible' => $removed]) }} wire:transition>
 	<x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
 	@error('form.body') <span class="error">{{ $message }}</span> @enderror
@@ -118,4 +127,5 @@ new class extends Component
 	<flux:button square wire:click="reload"><flux:icon.arrow-path /></flux:button>
 	<flux:button square wire:click="remove"><flux:icon.trash /></flux:button>
 	<x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
+</div>
 </div>

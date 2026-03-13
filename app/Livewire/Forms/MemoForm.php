@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Form;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
-use LogicException;
 
 /**
  * メモフォーム。
@@ -19,10 +18,6 @@ class MemoForm extends Form
     /** @var int id */
     #[Locked]
     public ?int $id = null;
-
-    /** @var int 新規追加リストのキー */
-    #[Locked]
-    public ?int $new_key = null;
 
     /** @var \Carbon\CarbonImmutable updated_at */
     #[Locked]
@@ -115,13 +110,8 @@ class MemoForm extends Form
     /**
      * 追加。
      */
-    public function store(): void
+    protected function store(): void
     {
-        // 新規追加はidがセットされていない場合のみ
-        if (isset($this->id)) {
-            throw new LogicException('idがセットされている状態で呼び出されました。');
-        }
-
         // 権限チェック
         Gate::authorize('create', Memo::class);
 
@@ -138,13 +128,8 @@ class MemoForm extends Form
     /**
      * 更新。
      */
-    public function update(): void
+    protected function update(): void
     {
-        // 更新はidがセットされている場合のみ
-        if (!isset($this->id)) {
-            throw new LogicException('idがセットされていない状態で呼び出されました。');
-        }
-
         $this->validate();
 
         $model = Memo::lockLatest($this->id, $this->updated_at);
