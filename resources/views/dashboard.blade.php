@@ -17,5 +17,5 @@
         </div>
     </div>
 -->
-	<livewire:memo.list />
+	<livewire:memo.display per_page="5" />
 </x-layouts::app>
