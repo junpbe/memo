@@ -120,51 +120,50 @@ new class extends Component
 ?>
 
 <div>
-	<div class="mb-3">
-		<flux:button square wire:click="create"><flux:icon.plus /></flux:button>
-		<flux:button square wire:click="$refresh"><flux:icon.arrow-path /></flux:button>
-	</div>
-	<div class="flex flex-wrap gap-4">
+    <div class="mb-3">
+        <flux:button square wire:click="create"><flux:icon.plus /></flux:button>
+        <flux:button square wire:click="$refresh"><flux:icon.arrow-path /></flux:button>
+    </div>
+    <div class="flex flex-wrap gap-4">
 @foreach ($this->list as $rec)
-		<div class="w-64 flex-initial">
-			<x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
-			<flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
-				<flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->body }}</flux:text>
-			</flux:card>
-		</div>
+        <div class="w-64">
+            <flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
+                <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->body }}</flux:text>
+            </flux:card>
+        </div>
 @endforeach
-	</div>
-	<flux:modal name="edit" class="w-full lg:max-w-5/10 max-w-9/10 dark:backdrop:bg-black/80!" wire:close="closeEdit" :dismissible="false">
-		<x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
-		<x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
-		@error('form.body') <span class="error">{{ $message }}</span> @enderror
-		<div class="mt-5">
-			<textarea name="body" class="w-full resize outline-none" rows="10" wire:model.live.debounce.500ms="form.body"></textarea>
-		</div>
-		<div class="flex justify-between">
-			<flux:modal.close>
-				<flux:button variant="ghost" wire:close="closeEdit">閉じる</flux:button>
-			</flux:modal.close>
+    </div>
+    <flux:modal name="edit" class="w-full lg:max-w-5/10 max-w-9/10 dark:backdrop:bg-black/80!" wire:close="closeEdit" :dismissible="false">
+        <x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
+        <x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
+        @error('form.body') <span class="error">{{ $message }}</span> @enderror
+        <div class="mt-5">
+            <textarea name="body" class="w-full resize outline-none" rows="10" wire:model.live.debounce.500ms="form.body"></textarea>
+        </div>
+        <div class="flex justify-between">
+            <flux:modal.close>
+                <flux:button variant="ghost" wire:close="closeEdit">閉じる</flux:button>
+            </flux:modal.close>
 @if($form->modelExists())
-			<flux:modal.trigger name="delete">
-				<flux:button variant="danger">削除</flux:button>
-			</flux:modal.trigger>
+            <flux:modal.trigger name="delete">
+                <flux:button variant="danger">削除</flux:button>
+            </flux:modal.trigger>
 @endif
-			<flux:button variant="primary" wire:click="save">保存</flux:button>
-		</div>
-	</flux:modal>
-	<flux:modal name="delete" class="min-w-[22rem] dark:backdrop:bg-black/80!">
-		<div class="space-y-6">
-			<div>
-				<flux:heading size="lg">削除しますか？</flux:heading>
-			</div>
-			<div class="flex gap-2">
-				<flux:spacer />
-				<flux:modal.close>
-					<flux:button variant="ghost">キャンセル</flux:button>
-				</flux:modal.close>
-				<flux:button variant="danger" wire:click="remove">削除</flux:button>
-			</div>
-		</div>
-	</flux:modal>
+            <flux:button variant="primary" wire:click="save">保存</flux:button>
+        </div>
+    </flux:modal>
+    <flux:modal name="delete" class="min-w-[22rem] dark:backdrop:bg-black/80!">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">削除しますか？</flux:heading>
+            </div>
+            <div class="flex gap-2">
+                <flux:spacer />
+                <flux:modal.close>
+                    <flux:button variant="ghost">キャンセル</flux:button>
+                </flux:modal.close>
+                <flux:button variant="danger" wire:click="remove">削除</flux:button>
+            </div>
+        </div>
+    </flux:modal>
 </div>
