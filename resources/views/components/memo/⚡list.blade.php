@@ -74,10 +74,10 @@ new class extends Component
 	</div>
 	<div class="flex flex-wrap gap-4">
 @foreach (array_reverse($add_list, true) as $key => $val)
-		<livewire:memo.rec :new_key="$key" wire:key="new_{{ $key }}" class="p-1 bg-sky-100/50 dark:bg-sky-900/50" />
+		<livewire:memo.rec :new_key="$key" wire:key="new_{{ $key }}" class="w-64 p-1 bg-sky-100/50 dark:bg-sky-900/50" />
 @endforeach
 @foreach ($list as $rec)
-		<livewire:memo.rec :$rec wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}" class="p-1" />
+		<livewire:memo.rec :$rec wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}" class="w-64 p-1" />
 @endforeach
 	</div>
 </div>

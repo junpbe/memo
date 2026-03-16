@@ -119,11 +119,11 @@ new class extends Component
 };
 ?>
 
-<div>
-<div {{ $attributes->class(['invisible' => $removed]) }} wire:transition>
+<div {{ $attributes }}>
+<div @class(['invisible' => $removed]) wire:transition>
 	<x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
 	@error('form.body') <span class="error">{{ $message }}</span> @enderror
-	<flux:memo-textarea resize="both" wire:model="form.body" wire:input.debounce.500ms="save"></flux:memo-textarea>
+	<flux:memo-textarea class="field-sizing-content w-full" resize="both" wire:model="form.body" wire:input.debounce.500ms="save"></flux:memo-textarea>
 	<flux:button square wire:click="reload"><flux:icon.arrow-path /></flux:button>
 	<flux:button square wire:click="remove"><flux:icon.trash /></flux:button>
 	<x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
