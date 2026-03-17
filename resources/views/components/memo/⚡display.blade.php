@@ -23,7 +23,7 @@ new class extends Component
     #[Computed]
     public function list()
     {
-        return Auth::user()->memos()->orderByDesc('id')->simplePaginate($this->per_page);
+        return Auth::user()->memos()->orderByDesc('updated_at')->orderByDesc('id')->simplePaginate($this->per_page);
     }
 
     /**
