@@ -36,7 +36,7 @@ new class extends Component
 };
 ?>
 
-<div {{ $attributes->class(['inline-block']) }}>
+<div {{ $attributes }}>
     <div class="flex items-center border-b border-zinc-100 dark:border-zinc-700 mb-3">
         <flux:heading size="xl">メモ</flux:heading>
         <flux:pagination :paginator="$this->list" class="grow border-t-0 pb-3" />
