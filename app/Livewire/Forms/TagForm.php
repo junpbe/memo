@@ -37,6 +37,7 @@ class TagForm extends Form
         return [
             'name' => [
                 'required',
+                'max:50',
             ],
         ];
     }

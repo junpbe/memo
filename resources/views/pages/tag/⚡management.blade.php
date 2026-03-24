@@ -2,7 +2,6 @@
 
 use App\Exceptions\ModelNotLatestException;
 use App\Livewire\Forms\TagForm;
-use App\Models\Memo;
 use App\Models\Tag;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
@@ -86,7 +85,7 @@ new class extends Component
         // データがDBに存在するなら削除
         if ($this->form->modelExists()) {
             DB::transaction(function () {
-                $rec = Memo::lockForUpdate()->find($this->form->id);
+                $rec = Tag::lockForUpdate()->find($this->form->id);
                 if (!isset($rec)) {
                     return;
                 }
@@ -137,11 +136,11 @@ new class extends Component
     <flux:modal name="edit" class="w-full lg:max-w-5/10 max-w-9/10 dark:backdrop:bg-black/80!" wire:close="closeEdit" :dismissible="false">
         <x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
         <x-action-message class="inline" on="saved-tag">保存しました</x-action-message>
-        @error('form.body') <span class="error">{{ $message }}</span> @enderror
-        <div class="mt-5">
-            <textarea name="body" class="w-full resize outline-none" rows="10" wire:model.live.debounce.500ms="form.name"></textarea>
+        @error('form.name') <span class="error">{{ $message }}</span> @enderror
+        <div class="mt-7">
+            <flux:input wire:model.live.debounce.500ms="form.name" type="text" />
         </div>
-        <div class="flex justify-between">
+        <div class="mt-5 flex justify-between">
             <flux:modal.close>
                 <flux:button variant="ghost" wire:close="closeEdit">閉じる</flux:button>
             </flux:modal.close>
