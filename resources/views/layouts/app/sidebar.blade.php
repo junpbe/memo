@@ -22,6 +22,11 @@
                         通常編集
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+                <flux:sidebar.group expandable heading="タグ" class="grid">
+                    <flux:sidebar.item :href="route('tag.management')" :current="request()->routeIs('tag.management')" wire:navigate>
+                        管理
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />

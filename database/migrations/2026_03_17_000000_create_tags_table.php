@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id()->comment('サロゲートキー');
             $table->foreignId('user_id')->constrained()->cascadeOnDelete()->comment('ユーザID:users.id');
             $table->string('name', length: 100)->comment('名前');
+            $table->unsignedInteger('priority')->comment('優先度');
             $table->datetimes(precision: 6);
         });
 

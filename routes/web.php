@@ -7,9 +7,12 @@ Route::permanentRedirect('/', '/dashboard')->name('home');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
 
-    Route::name('memo.')->group(function () {
-        Route::livewire('/memo/simple', 'pages::memo.simple')->name('simple');
-        Route::livewire('/memo/normal', 'pages::memo.normal')->name('normal');
+    Route::prefix('memo')->name('memo.')->group(function () {
+        Route::livewire('/simple', 'pages::memo.simple')->name('simple');
+        Route::livewire('/normal', 'pages::memo.normal')->name('normal');
+    });
+    Route::prefix('tag')->name('tag.')->group(function () {
+        Route::livewire('/management', 'pages::tag.management')->name('management');
     });
 });
 
