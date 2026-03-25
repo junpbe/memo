@@ -5,6 +5,7 @@ use App\Livewire\Forms\TagForm;
 use App\Models\Tag;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -138,7 +139,8 @@ new class extends Component
                 $newPriority = $index + 1;
                 if ($tag->priority !== $newPriority) {
                     $tag->priority = $newPriority;
-                    $tag->save();
+                    // 場合によっては全データ更新が走ったりするので、排他処理に影響しないように更新日時を更新しない
+                    Model::withoutTimestamps(fn() => $tag->save());
                 }
             }
         });
