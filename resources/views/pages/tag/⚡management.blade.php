@@ -106,12 +106,12 @@ new class extends Component
     /**
      * 並び順を更新する。
      *
-     * @param int $tagId タグID
+     * @param int $tag_id タグID
      * @param int $position 新しい位置（0始まり）
      */
-    public function reorder(int $tagId, int $position): void
+    public function reorder(int $tag_id, int $position): void
     {
-        DB::transaction(function () use ($tagId, $position) {
+        DB::transaction(function () use ($tag_id, $position) {
             $tags = Auth::user()
                 ->tags()
                 ->orderBy('priority')
@@ -120,14 +120,14 @@ new class extends Component
 
             $order = $tags->pluck('id')->toArray();
 
-            if (!in_array($tagId, $order, true)) {
+            if (!in_array($tag_id, $order, true)) {
                 return;
             }
 
             // 移動元を除外して挿入位置に再配置
-            $order = array_values(array_diff($order, [$tagId]));
+            $order = array_values(array_diff($order, [$tag_id]));
             $position = max(0, min($position, count($order)));
-            array_splice($order, $position, 0, [$tagId]);
+            array_splice($order, $position, 0, [$tag_id]);
 
             foreach ($order as $index => $id) {
                 $tag = $tags->firstWhere('id', $id);
@@ -142,8 +142,6 @@ new class extends Component
                 }
             }
         });
-
-        $this->dispatch('sorted-tag', $tagId);
     }
 
     /**
