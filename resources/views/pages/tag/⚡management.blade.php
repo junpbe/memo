@@ -167,7 +167,7 @@ new class extends Component
     </div>
     <div class="flex flex-wrap gap-4" wire:sort="reorder" wire:sort:group-id="tag-management">
 @foreach ($this->list as $rec)
-        <div class="w-64" wire:sort:item="{{ $rec->id }}">
+        <div wire:sort:item="{{ $rec->id }}">
             <flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
                 <div class="flex items-center justify-between gap-2">
                     <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->name }}</flux:text>
