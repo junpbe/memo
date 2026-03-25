@@ -104,6 +104,49 @@ new class extends Component
     }
 
     /**
+     * 並び順を更新する。
+     *
+     * @param int $tagId タグID
+     * @param int $position 新しい位置（0始まり）
+     */
+    public function reorder(int $tagId, int $position): void
+    {
+        DB::transaction(function () use ($tagId, $position) {
+            $tags = Auth::user()
+                ->tags()
+                ->orderBy('priority')
+                ->lockForUpdate()
+                ->get();
+
+            $order = $tags->pluck('id')->toArray();
+
+            if (!in_array($tagId, $order, true)) {
+                return;
+            }
+
+            // 移動元を除外して挿入位置に再配置
+            $order = array_values(array_diff($order, [$tagId]));
+            $position = max(0, min($position, count($order)));
+            array_splice($order, $position, 0, [$tagId]);
+
+            foreach ($order as $index => $id) {
+                $tag = $tags->firstWhere('id', $id);
+                if (!isset($tag)) {
+                    continue;
+                }
+
+                $newPriority = $index + 1;
+                if ($tag->priority !== $newPriority) {
+                    $tag->priority = $newPriority;
+                    $tag->save();
+                }
+            }
+        });
+
+        $this->dispatch('sorted-tag', $tagId);
+    }
+
+    /**
      * exception.
      *
      * @param mixed $e
@@ -124,11 +167,14 @@ new class extends Component
         <flux:button square wire:click="create"><flux:icon.plus /></flux:button>
         <flux:button square wire:click="$refresh"><flux:icon.arrow-path /></flux:button>
     </div>
-    <div class="flex flex-wrap gap-4">
+    <div class="flex flex-wrap gap-4" wire:sort="reorder" wire:sort:group-id="tag-management">
 @foreach ($this->list as $rec)
-        <div class="w-64">
+        <div class="w-64" wire:sort:item="{{ $rec->id }}">
             <flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
-                <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->name }}</flux:text>
+                <div class="flex items-center justify-between gap-2">
+                    <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->name }}</flux:text>
+                    <span wire:sort:handle class="cursor-move text-zinc-400 dark:text-zinc-300" title="ドラッグで並び替え"><flux:icon.bars-3 /></span>
+                </div>
             </flux:card>
         </div>
 @endforeach
