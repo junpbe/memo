@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\Creatable;
 use App\Models\Traits\Lockable;
 use App\Models\Traits\Updatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Memo extends Model
 {
-    use Lockable, Creatable, Updatable;
+    use HasFactory, Lockable, Creatable, Updatable;
 
     /** @see \Illuminate\Database\Eloquent\Concerns\HasAttributes::dateFormat */
     protected $dateFormat = 'Y-m-d H:i:s.u';
@@ -25,6 +26,7 @@ class Memo extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'user_id',
         'body',
     ];
 
@@ -66,6 +68,6 @@ class Memo extends Model
      */
     public function tags(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class);
+        return $this->belongsToMany(Tag::class)->using(MemoTag::class);
     }
 }

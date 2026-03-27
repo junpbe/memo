@@ -21,8 +21,8 @@ return new class extends Migration
         });
 
         Schema::table('memos', function (Blueprint $table) {
-            $table->foreignId('created_by')->after('created_at')->comment('作成者');
-            $table->foreignId('updated_by')->after('updated_at')->comment('更新者');
+            $table->foreignId('created_by')->nullable()->after('created_at')->comment('作成者');
+            $table->foreignId('updated_by')->nullable()->after('updated_at')->comment('更新者');
         });
     }
 
