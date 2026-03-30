@@ -26,7 +26,6 @@ class Memo extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'user_id',
         'body',
     ];
 
