@@ -4,13 +4,15 @@ use App\Exceptions\ModelNotLatestException;
 use App\Models\Memo;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use LogicException;
+//use LogicException;
 
 test('Lockable trait lockLatest returns model when up to date', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $memo = Memo::create(['body' => 'Test memo']);
+    $memo = Memo::make(['body' => 'Test memo']);
+    $memo->user_id = $user->id;
+    $memo->save();
     $originalUpdatedAt = $memo->updated_at;
 
     DB::transaction(function () use ($memo, $originalUpdatedAt) {
@@ -29,19 +31,26 @@ test('Lockable trait lockLatest throws exception when updated_at differs', funct
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $memo = Memo::create(['body' => 'Test memo']);
-    $oldUpdatedAt = $memo->updated_at->copy()->subSecond();
+    $memo = Memo::make(['body' => 'Test memo']);
+    $memo->user_id = $user->id;
+    $memo->save();
+    $oldUpdatedAt = $memo->updated_at->copy();
 
     DB::transaction(function () use ($memo, $oldUpdatedAt) {
-        expect(fn() => Memo::lockLatest($memo->id, $oldUpdatedAt))->toThrow(ModelNotLatestException::class);
+        expect(fn() => Memo::lockLatest($memo->id, $oldUpdatedAt->subSecond()))->toThrow(ModelNotLatestException::class);
     });
 });
 
 test('Lockable trait lockLatest throws exception when not in transaction', function () {
+    // Illuminate\Foundation\Testing\RefreshDatabaseがテスト用のトランザクションを切ってしまっているので、ロールバックで強引にトランザクションから外す
+    DB::rollBack();
+
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $memo = Memo::create(['body' => 'Test memo']);
+    $memo = Memo::make(['body' => 'Test memo']);
+    $memo->user_id = $user->id;
+    $memo->save();
 
     expect(fn() => Memo::lockLatest($memo->id, $memo->updated_at))->toThrow(LogicException::class);
 });
