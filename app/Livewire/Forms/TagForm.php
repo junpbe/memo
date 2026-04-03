@@ -77,7 +77,6 @@ class TagForm extends Form
         $this->updated_at = $model->updated_at;
 
         $this->name = $model->name;
-        //TODO　優先度はどうするか
     }
 
     /**
