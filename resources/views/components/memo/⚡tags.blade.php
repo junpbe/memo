@@ -15,6 +15,14 @@ new class extends Component
     #[Locked]
     public ?int $memo_id = null;
 
+    /** @var string タグのサイズ */
+    #[Locked]
+    public string $tag_size = '';
+
+    /** @var string セレクトボックスのサイズ */
+    #[Locked]
+    public string $select_size = '';
+
     /**
      * タグ。
      *
@@ -49,9 +57,11 @@ new class extends Component
     /**
      * mount.
      */
-    public function mount(int $memo_id)
+    public function mount(?int $memo_id, ?string $tag_size = null, ?string $select_size = null)
     {
         $this->memo_id = $memo_id;
+        $this->tag_size = $tag_size ?? '';
+        $this->select_size = $select_size ?? '';
     }
 
     /**
@@ -104,10 +114,10 @@ new class extends Component
 
 <div {{ $attributes }}>
 @foreach ($this->attached_tags as $rec)
-    <flux:badge class="me-1">{{ $rec->name }}<flux:badge.close wire:click="detachTag({{ $rec->id }})" /></flux:badge>
+    <flux:badge class="me-1" size="{{ $tag_size }}">{{ $rec->name }}<flux:badge.close wire:click="detachTag({{ $rec->id }})" /></flux:badge>
 @endforeach
 @if($this->tags->isNotEmpty())
-    <flux:select id="tag-select" class="w-auto inline-block" size="sm" placeholder="タグを追加" wire:change="attachTag($event.target.value)">
+    <flux:select id="tag-select" class="w-auto inline-block" placeholder="タグを追加" wire:change="attachTag($event.target.value)" size="{{ $select_size }}">
 @foreach ($this->tags as $rec)
         <flux:select.option :value="$rec->id">{{ $rec->name }}</flux:select.option>
 @endforeach

@@ -121,6 +121,9 @@ new class extends Component
 
 <div {{ $attributes->class(['invisible' => $removed]) }} wire:transition>
     <x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
+@isset($form->id)
+    <livewire:memo.tags class="mb-1 w-64" :memo_id="$form->id" tag_size="sm" select_size="xs" />
+@endisset
     @error('form.body') <span class="error">{{ $message }}</span> @enderror
     <flux:memo-textarea class="field-sizing-content w-64" resize="both" wire:model="form.body" wire:input.debounce.500ms="save"></flux:memo-textarea>
     <flux:button square wire:click="reload"><flux:icon.arrow-path /></flux:button>
