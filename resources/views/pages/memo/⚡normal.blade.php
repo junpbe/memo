@@ -28,37 +28,6 @@ new class extends Component
     }
 
     /**
-     * タグ。
-     *
-     * @return Collection タグ
-     */
-    #[Computed]
-    public function tags(): Collection
-    {
-        $attached_ids = $this->attachedTags()->pluck('id')->all();
-        return Auth::user()->tags()->whereNotIn('id', $attached_ids)->orderBy('priority')->get();
-    }
-
-    /**
-     * 付加されているタグ。
-     *
-     * @return Collection 付加されているタグ
-     */
-    #[Computed]
-    public function attachedTags(): Collection
-    {
-        if (!isset($this->form->id)) {
-            return new Collection([]);
-        }
-        $memo = Memo::find($this->form->id);
-        if (!isset($memo)) {
-            return new Collection([]);
-        }
-
-        return $memo->tags()->orderBy('priority')->get();
-    }
-
-    /**
      * 新規追加。
      */
     public function create(): void
@@ -135,52 +104,6 @@ new class extends Component
     }
 
     /**
-     * タグ付与。
-     *
-     * @param int $id タグID
-     */
-    public function attachTag(int $tag_id): void
-    {
-        DB::transaction(function () use ($tag_id) {
-            $memo = Memo::lockLatest($this->form->id, $this->form->updated_at);
-
-            // 既に付与されている場合は何もしない
-            if ($memo->tags()->where('tag_id', $tag_id)->exists()) {
-                return;
-            }
-
-            // 権限チェック
-            Gate::authorize('update', $memo);
-
-            $memo->tags()->attach($tag_id);
-        });
-
-        $this->js('resetTagSelect');
-    }
-
-    /**
-     * タグ除去。
-     *
-     * @param int $id タグID
-     */
-    public function detachTag(int $tag_id): void
-    {
-        DB::transaction(function () use ($tag_id) {
-            $memo = Memo::lockLatest($this->form->id, $this->form->updated_at);
-
-            // 付与されていない場合は何もしない
-            if (!$memo->tags()->where('tag_id', $tag_id)->exists()) {
-                return;
-            }
-
-            // 権限チェック
-            Gate::authorize('update', $memo);
-
-            $memo->tags()->detach($tag_id);
-        });
-    }
-
-    /**
      * exception.
      *
      * @param mixed $e
@@ -213,18 +136,9 @@ new class extends Component
     <flux:modal name="edit" class="w-full lg:max-w-5/10 max-w-9/10 dark:backdrop:bg-black/80!" wire:close="closeEdit" :dismissible="false">
         <x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
         <x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
-        <div>
-@foreach ($this->attached_tags as $rec)
-            <flux:badge class="me-1">{{ $rec->name }}<flux:badge.close wire:click="detachTag({{ $rec->id }})" /></flux:badge>
-@endforeach
-@if($this->tags->isNotEmpty())
-            <flux:select id="tag-select" class="w-auto inline-block" size="sm" placeholder="タグを追加" wire:change="attachTag($event.target.value)">
-@foreach ($this->tags as $rec)
-                <flux:select.option :value="$rec->id">{{ $rec->name }}</flux:select.option>
-@endforeach
-            </flux:select>
-@endif
-        </div>
+@isset($form->id)
+        <livewire:memo.tags :memo_id="$form->id" />
+@endisset
         @error('form.body') <span class="error">{{ $message }}</span> @enderror
         <div class="mt-5">
             <textarea name="body" class="w-full resize outline-none" rows="10" wire:model.live.debounce.500ms="form.body"></textarea>
@@ -255,12 +169,4 @@ new class extends Component
             </div>
         </div>
     </flux:modal>
-@script
-    <script>
-        this.$js.resetTagSelect = () => {
-            const select = document.getElementById('tag-select');
-            select.selectedIndex = 0;
-        };
-    </script>
-@endscript
 </div>
