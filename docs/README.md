@@ -2,7 +2,7 @@
 
 Laravel 12、Livewire 4、tailwind 4、AWSを試すためのちょっとしたメモアプリのようなもの。
 
-![Image](https://github.com/user-attachments/assets/190d1afe-d824-4673-a09d-e13528e6aa51)
+![Image](https://github.com/user-attachments/assets/89027277-f260-4a3b-8600-2f683a52d0b7)
 
 
 ## AWS構成図
