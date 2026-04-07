@@ -11,6 +11,10 @@ use Livewire\Attributes\Locked;
 
 new class extends Component
 {
+    /** @var bool 読み取り専用かどうか */
+    #[Locked]
+    public bool $readonly = true;
+
     /** @var int メモID */
     #[Locked]
     public ?int $memo_id = null;
@@ -57,11 +61,12 @@ new class extends Component
     /**
      * mount.
      */
-    public function mount(?int $memo_id, ?string $tag_size = null, ?string $select_size = null)
+    public function mount(?int $memo_id, ?string $tag_size = null, ?string $select_size = null, ?bool $readonly = false)
     {
         $this->memo_id = $memo_id;
         $this->tag_size = $tag_size ?? '';
         $this->select_size = $select_size ?? '';
+        $this->readonly = $readonly;
     }
 
     /**
@@ -71,6 +76,11 @@ new class extends Component
      */
     public function attachTag(int $tag_id): void
     {
+        // 読み取り専用の場合実行しない
+        if ($this->readonly) {
+            return;
+        }
+
         DB::transaction(function () use ($tag_id) {
             $memo = Memo::find($this->memo_id);
 
@@ -93,6 +103,11 @@ new class extends Component
      */
     public function detachTag(int $tag_id): void
     {
+        // 読み取り専用の場合実行しない
+        if ($this->readonly) {
+            return;
+        }
+
         DB::transaction(function () use ($tag_id) {
             $memo = Memo::find($this->memo_id);
 
@@ -112,9 +127,9 @@ new class extends Component
 
 <div {{ $attributes }}>
 @foreach ($this->attached_tags as $rec)
-    <flux:badge class="me-1" size="{{ $tag_size }}" color="blue">{{ $rec->name }}<flux:badge.close wire:click="detachTag({{ $rec->id }})" /></flux:badge>
+    <flux:badge class="me-1" size="{{ $tag_size }}" color="blue">{{ $rec->name }}@if(!$readonly)<flux:badge.close wire:click="detachTag({{ $rec->id }})" />@endif</flux:badge>
 @endforeach
-@if($this->tags->isNotEmpty())
+@if(!$readonly && $this->tags->isNotEmpty())
     <flux:dropdown>
         <flux:button icon="ellipsis-horizontal" size="{{ $select_size }}" class="align-middle" variant="primary" color="blue"></flux:button>
         <flux:menu class="bg-blue-300! dark:bg-blue-500!">

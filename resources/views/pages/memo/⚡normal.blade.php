@@ -130,6 +130,7 @@ new class extends Component
             <flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
                 <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->body }}</flux:text>
             </flux:card>
+            <livewire:memo.tags class="mb-1 w-64" :memo_id="$rec->id" tag_size="sm" select_size="xs" readonly />
         </div>
 @endforeach
     </div>
