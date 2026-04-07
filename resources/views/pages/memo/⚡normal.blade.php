@@ -137,7 +137,7 @@ new class extends Component
         <x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
         <x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
 @isset($form->id)
-        <livewire:memo.tags :memo_id="$form->id" select_size="sm" />
+        <livewire:memo.tags :memo_id="$form->id" select_size="xs" />
 @endisset
         @error('form.body') <span class="error">{{ $message }}</span> @enderror
         <div class="mt-5">

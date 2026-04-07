@@ -84,8 +84,6 @@ new class extends Component
 
             $memo->tags()->attach($tag_id);
         });
-
-        $this->js('resetTagSelect');
     }
 
     /**
@@ -114,21 +112,16 @@ new class extends Component
 
 <div {{ $attributes }}>
 @foreach ($this->attached_tags as $rec)
-    <flux:badge class="me-1" size="{{ $tag_size }}">{{ $rec->name }}<flux:badge.close wire:click="detachTag({{ $rec->id }})" /></flux:badge>
+    <flux:badge class="me-1" size="{{ $tag_size }}" color="blue">{{ $rec->name }}<flux:badge.close wire:click="detachTag({{ $rec->id }})" /></flux:badge>
 @endforeach
 @if($this->tags->isNotEmpty())
-    <flux:select id="tag-select" class="w-auto inline-block" placeholder="タグを追加" wire:change="attachTag($event.target.value)" size="{{ $select_size }}">
+    <flux:dropdown>
+        <flux:button icon="ellipsis-horizontal" size="{{ $select_size }}" class="align-middle" variant="primary" color="blue"></flux:button>
+        <flux:menu class="bg-blue-300! dark:bg-blue-500!">
 @foreach ($this->tags as $rec)
-        <flux:select.option :value="$rec->id">{{ $rec->name }}</flux:select.option>
+            <flux:menu.item wire:click="attachTag({{ $rec->id }})">{{ $rec->name }}</flux:menu.item>
 @endforeach
-    </flux:select>
+        </flux:menu>
+    </flux:dropdown>
 @endif
-@script
-    <script>
-        this.$js.resetTagSelect = () => {
-            const select = document.getElementById('tag-select');
-            select.selectedIndex = 0;
-        };
-    </script>
-@endscript
 </div>
