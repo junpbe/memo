@@ -128,11 +128,25 @@ new class extends Component
         </div>
         <div>
             <flux:button square wire:click="reload" size="xs"><flux:icon.arrow-path class="size-4" /></flux:button>
-            <flux:button square wire:click="remove" size="xs"><flux:icon.trash class="size-4" /></flux:button>
+            <flux:modal.trigger name="delete-{{ isset($new_key) ? 'new-' . $new_key : $form->id }}">
+                <flux:button square size="xs" variant="danger"><flux:icon.trash class="size-4" /></flux:button>
+            </flux:modal.trigger>
         </div>
     </div>
     <flux:memo-textarea class="field-sizing-content w-64" resize="both" wire:model="form.body" wire:input.debounce.500ms="save"></flux:memo-textarea>
 @isset($form->id)
     <livewire:memo.tags class="mb-1 w-64" :memo_id="$form->id" tag_size="sm" select_size="xs" />
 @endisset
+    <flux:modal name="delete-{{ isset($new_key) ? 'new-' . $new_key : $form->id }}" class="min-w-[22rem]">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">削除しますか？</flux:heading>
+            </div>
+            <div class="flex gap-2">
+                <flux:spacer />
+                <flux:modal.close><flux:button variant="ghost">キャンセル</flux:button></flux:modal.close>
+                <flux:modal.close><flux:button variant="danger" wire:click="remove">削除</flux:button></flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
 </div>
