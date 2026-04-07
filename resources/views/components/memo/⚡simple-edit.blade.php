@@ -119,13 +119,34 @@ new class extends Component
 };
 ?>
 
-<div>
 <div {{ $attributes->class(['invisible' => $removed]) }} wire:transition>
-	<x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
-	@error('form.body') <span class="error">{{ $message }}</span> @enderror
-	<flux:memo-textarea resize="both" wire:model="form.body" wire:input.debounce.500ms="save"></flux:memo-textarea>
-	<flux:button square wire:click="reload"><flux:icon.arrow-path /></flux:button>
-	<flux:button square wire:click="remove"><flux:icon.trash /></flux:button>
-	<x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
-</div>
+    <div class="flex justify-between">
+        <div>
+            <x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
+            <x-action-message class="inline" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
+            @error('form.body') <span class="error">{{ $message }}</span> @enderror
+        </div>
+        <div>
+            <flux:button square wire:click="reload" size="xs"><flux:icon.arrow-path class="size-4" /></flux:button>
+            <flux:modal.trigger name="delete-{{ isset($new_key) ? 'new-' . $new_key : $form->id }}">
+                <flux:button square size="xs" variant="danger"><flux:icon.trash class="size-4" /></flux:button>
+            </flux:modal.trigger>
+        </div>
+    </div>
+    <flux:memo-textarea class="field-sizing-content w-64" resize="both" wire:model="form.body" wire:input.debounce.500ms="save"></flux:memo-textarea>
+@isset($form->id)
+    <livewire:memo.tags class="mb-1 w-64" :memo_id="$form->id" tag_size="sm" select_size="xs" />
+@endisset
+    <flux:modal name="delete-{{ isset($new_key) ? 'new-' . $new_key : $form->id }}" class="min-w-[22rem]">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">削除しますか？</flux:heading>
+            </div>
+            <div class="flex gap-2">
+                <flux:spacer />
+                <flux:modal.close><flux:button variant="ghost">キャンセル</flux:button></flux:modal.close>
+                <flux:modal.close><flux:button variant="danger" wire:click="remove">削除</flux:button></flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
 </div>

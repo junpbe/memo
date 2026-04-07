@@ -64,6 +64,16 @@ class User extends Authenticatable
     }
 
     /**
+     * リレーション：タグ。
+     *
+     * @return HasMany
+     */
+    public function tags(): HasMany
+    {
+        return $this->hasMany(Tag::class);
+    }
+
+    /**
      * Get the user's initials
      */
     public function initials(): string

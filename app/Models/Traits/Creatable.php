@@ -18,6 +18,10 @@ trait Creatable
     public static function bootCreatable(): void
     {
         static::creating(function (Model $model) {
+            // Model::withoutTimestamps()などで一時的にタイムスタンプ更新を無効にしている場合、自動更新しない
+            if (!$model->usesTimestamps()) {
+                return;
+            }
             $model->created_by = Auth::id() ?? 0;
         });
     }

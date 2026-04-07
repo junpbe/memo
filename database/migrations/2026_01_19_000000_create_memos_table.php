@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id()->comment('サロゲートキー');
             $table->foreignId('user_id')->constrained()->cascadeOnDelete()->comment('ユーザID:users.id');
             $table->text('body')->nullable()->comment('本文');
-            $table->datetimes(6);
+            $table->datetimes(precision: 6);
         });
 
         Schema::table('memos', function (Blueprint $table) {

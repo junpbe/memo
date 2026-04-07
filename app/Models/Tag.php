@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * メモモデル。
+ * タグモデル。
  */
-class Memo extends Model
+class Tag extends Model
 {
     use HasFactory, Lockable, Creatable, Updatable;
 
@@ -26,7 +26,7 @@ class Memo extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'body',
+        'name',
     ];
 
     /**
@@ -61,12 +61,12 @@ class Memo extends Model
     }
 
     /**
-     * リレーション：タグ。
+     * リレーション：メモ。
      *
      * @return BelongsToMany
      */
-    public function tags(): BelongsToMany
+    public function memos(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class)->using(MemoTag::class)->withTimestamps();
+        return $this->belongsToMany(Memo::class)->using(MemoTag::class)->withTimestamps();
     }
 }

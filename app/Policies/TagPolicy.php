@@ -2,10 +2,10 @@
 
 namespace App\Policies;
 
-use App\Models\Memo;
+use App\Models\Tag;
 use App\Models\User;
 
-class MemoPolicy
+class TagPolicy
 {
     /**
      * Perform pre-authorization checks.
@@ -31,10 +31,10 @@ class MemoPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Memo $memo): bool
+    public function view(User $user, Tag $tag): bool
     {
         // 自分のデータは許可
-        if ($memo->user_id === $user->id) {
+        if ($tag->user_id === $user->id) {
             return true;
         }
         return false;
@@ -52,10 +52,10 @@ class MemoPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Memo $memo): bool
+    public function update(User $user, Tag $tag): bool
     {
         // 自分のデータは許可
-        if ($memo->user_id === $user->id) {
+        if ($tag->user_id === $user->id) {
             return true;
         }
         return false;
@@ -64,10 +64,10 @@ class MemoPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Memo $memo): bool
+    public function delete(User $user, Tag $tag): bool
     {
         // 自分のデータは許可
-        if ($memo->user_id === $user->id) {
+        if ($tag->user_id === $user->id) {
             return true;
         }
         return false;
@@ -76,7 +76,7 @@ class MemoPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Memo $memo): bool
+    public function restore(User $user, Tag $tag): bool
     {
         // 未使用
         return false;
@@ -85,7 +85,7 @@ class MemoPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Memo $memo): bool
+    public function forceDelete(User $user, Tag $tag): bool
     {
         // 未使用
         return false;
