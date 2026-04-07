@@ -15,11 +15,16 @@
                     {{ __('Dashboard') }}
                 </flux:sidebar.item>
                 <flux:sidebar.group expandable heading="メモ" class="grid">
-                    <flux:sidebar.item :href="route('simple')" :current="request()->routeIs('simple')" wire:navigate>
+                    <flux:sidebar.item :href="route('memo.simple')" :current="request()->routeIs('memo.simple')" wire:navigate>
                         簡易編集
                     </flux:sidebar.item>
-                    <flux:sidebar.item :href="route('normal')" :current="request()->routeIs('normal')" wire:navigate>
+                    <flux:sidebar.item :href="route('memo.normal')" :current="request()->routeIs('memo.normal')" wire:navigate>
                         通常編集
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
+                <flux:sidebar.group expandable heading="タグ" class="grid">
+                    <flux:sidebar.item :href="route('tag.management')" :current="request()->routeIs('tag.management')" wire:navigate>
+                        管理
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>

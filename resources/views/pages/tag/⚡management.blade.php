@@ -1,10 +1,11 @@
 <?php
 
 use App\Exceptions\ModelNotLatestException;
-use App\Livewire\Forms\MemoForm;
-use App\Models\Memo;
+use App\Livewire\Forms\TagForm;
+use App\Models\Tag;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -13,8 +14,8 @@ use Livewire\Attributes\Computed;
 
 new class extends Component
 {
-    /** @var \App\Livewire\Forms\MemoForm フォーム */
-    public MemoForm $form;
+    /** @var \App\Livewire\Forms\TagForm フォーム */
+    public TagForm $form;
 
     /**
      * 一覧。
@@ -24,7 +25,7 @@ new class extends Component
     #[Computed]
     public function list(): Collection
     {
-        return Auth::user()->memos()->orderByDesc('id')->get();
+        return Auth::user()->tags()->orderBy('priority')->get();
     }
 
     /**
@@ -46,7 +47,7 @@ new class extends Component
      */
     public function edit(int $id): void
     {
-        $rec = Memo::find($id);
+        $rec = Tag::find($id);
         if (!isset($rec)) {
             // 存在しない場合エラー
             throw new ModelNotLatestException();
@@ -74,7 +75,7 @@ new class extends Component
         DB::transaction(function () {
             $this->form->save();
         });
-        $this->dispatch('saved-memo', $this->form->id);
+        $this->dispatch('saved-tag', $this->form->id);
     }
 
     /**
@@ -85,7 +86,7 @@ new class extends Component
         // データがDBに存在するなら削除
         if ($this->form->modelExists()) {
             DB::transaction(function () {
-                $rec = Memo::lockForUpdate()->find($this->form->id);
+                $rec = Tag::lockForUpdate()->find($this->form->id);
                 if (!isset($rec)) {
                     return;
                 }
@@ -101,6 +102,48 @@ new class extends Component
         Flux::modal('delete')->close();
         Flux::modal('edit')->close();
         $this->closeEdit();
+    }
+
+    /**
+     * 並び順を更新する。
+     *
+     * @param int $tag_id タグID
+     * @param int $position 新しい位置（0始まり）
+     */
+    public function reorder(int $tag_id, int $position): void
+    {
+        DB::transaction(function () use ($tag_id, $position) {
+            $tags = Auth::user()
+                ->tags()
+                ->orderBy('priority')
+                ->lockForUpdate()
+                ->get();
+
+            $order = $tags->pluck('id')->toArray();
+
+            if (!in_array($tag_id, $order, true)) {
+                return;
+            }
+
+            // 移動元を除外して挿入位置に再配置
+            $order = array_values(array_diff($order, [$tag_id]));
+            $position = max(0, min($position, count($order)));
+            array_splice($order, $position, 0, [$tag_id]);
+
+            foreach ($order as $index => $id) {
+                $tag = $tags->firstWhere('id', $id);
+                if (!isset($tag)) {
+                    continue;
+                }
+
+                $newPriority = $index + 1;
+                if ($tag->priority !== $newPriority) {
+                    $tag->priority = $newPriority;
+                    // 場合によっては全データ更新が走ったりするので、排他処理に影響しないように更新日時を更新しない
+                    Model::withoutTimestamps(fn() => $tag->save());
+                }
+            }
+        });
     }
 
     /**
@@ -124,23 +167,26 @@ new class extends Component
         <flux:button square wire:click="create"><flux:icon.plus /></flux:button>
         <flux:button square wire:click="$refresh"><flux:icon.arrow-path /></flux:button>
     </div>
-    <div class="flex flex-wrap gap-4">
+    <div class="flex flex-wrap gap-4" wire:sort="reorder" wire:sort:group-id="tag-management">
 @foreach ($this->list as $rec)
-        <div class="w-64">
+        <div wire:sort:item="{{ $rec->id }}">
             <flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
-                <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->body }}</flux:text>
+                <div class="flex items-center justify-between gap-2">
+                    <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->name }}</flux:text>
+                    <span wire:sort:handle class="cursor-move text-zinc-400 dark:text-zinc-300" title="ドラッグで並び替え"><flux:icon.bars-3 /></span>
+                </div>
             </flux:card>
         </div>
 @endforeach
     </div>
     <flux:modal name="edit" class="w-full lg:max-w-5/10 max-w-9/10 dark:backdrop:bg-black/80!" wire:close="closeEdit" :dismissible="false">
         <x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
-        <x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
-        @error('form.body') <span class="error">{{ $message }}</span> @enderror
-        <div class="mt-5">
-            <textarea name="body" class="w-full resize outline-none" rows="10" wire:model.live.debounce.500ms="form.body"></textarea>
+        <x-action-message class="inline" on="saved-tag">保存しました</x-action-message>
+        @error('form.name') <span class="error">{{ $message }}</span> @enderror
+        <div class="mt-7">
+            <flux:input wire:model.live.debounce.500ms="form.name" type="text" />
         </div>
-        <div class="flex justify-between">
+        <div class="mt-5 flex justify-between">
             <flux:modal.close>
                 <flux:button variant="ghost" wire:close="closeEdit">閉じる</flux:button>
             </flux:modal.close>
