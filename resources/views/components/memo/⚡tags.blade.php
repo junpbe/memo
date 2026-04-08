@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Memo;
+use App\Models\Tag;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -91,6 +92,13 @@ new class extends Component
 
             // 権限チェック
             Gate::authorize('update', $memo);
+
+            $tag = Tag::lockForUpdate()->find($tag_id);
+
+            // タグがない場合や、自分のタグではない場合は何もしない
+            if (!isset($tag) || $tag->user_id !== Auth::id()){
+                return;
+            }
 
             $memo->tags()->attach($tag_id);
         });
