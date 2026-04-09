@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Memo;
-use App\Models\Tag;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +24,7 @@ new class extends Component
     #[Locked]
     public string $select_size = '';
 
-    /** @var Collection 付与されているタグ */
+    /** @var \Illuminate\Database\Eloquent\Collection 付与されているタグ */
     #[Locked]
     public Collection $attached_tags;
 
@@ -37,6 +36,7 @@ new class extends Component
     #[Computed]
     public function allTags(): Collection
     {
+        //TODO　ユーザID毎にメソッド内staticでキャッシュした方がよさそう
         return Auth::user()->tags()->orderBy('priority')->get();
     }
 

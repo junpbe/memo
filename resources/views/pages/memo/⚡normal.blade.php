@@ -24,7 +24,7 @@ new class extends Component
     #[Computed]
     public function list(): Collection
     {
-        return Auth::user()->memos()->orderByDesc('id')->get();
+        return Auth::user()->memos()->with(['tags' => fn($q) => $q->orderBy('priority')])->orderByDesc('id')->get();
     }
 
     /**
@@ -131,7 +131,7 @@ new class extends Component
             <flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
                 <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->body }}</flux:text>
             </flux:card>
-            <livewire:memo.tags class="mb-1 w-64" :memo_id="$rec->id" tag_size="sm" readonly wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}" />
+            <livewire:memo.tags class="mb-1 w-64" :memo="$rec" tag_size="sm" readonly wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}" />
         </div>
 @endforeach
     </div>

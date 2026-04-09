@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\On;
 
 new class extends Component
 {
@@ -29,6 +28,10 @@ new class extends Component
     #[Locked]
     public bool $readonly = false;
 
+    /** @var \Illuminate\Database\Eloquent\Collection 付与されているタグ */
+    #[Locked]
+    public Collection $attached_tags;
+
     /**
      * ユーザに属するすべてのタグ。
      *
@@ -37,6 +40,7 @@ new class extends Component
     #[Computed]
     public function allTags(): Collection
     {
+        //TODO　ユーザID毎にメソッド内staticでキャッシュした方がよさそう
         return Auth::user()->tags()->orderBy('priority')->get();
     }
 
@@ -52,35 +56,21 @@ new class extends Component
     }
 
     /**
-     * 付与されているタグ（DBに記録されている状態）。
-     *
-     * @return Collection 付与されているタグ
-     */
-    #[Computed]
-    public function attachedTags(): Collection
-    {
-        $memo = Memo::find($this->memo_id);
-        if (!isset($memo)) {
-            return new Collection([]);
-        }
-
-        return $memo->tags()->orderBy('priority')->get();
-    }
-
-    /**
      * mount.
      *
-     * @param int $memo_id メモID
+     * @param Memo $memo メモ
      * @param string $tag_size タグのサイズ
      * @param string $select_size セレクトボックスのサイズ
      * @param bool $readonly 読み取り専用の場合true、そうでない場合false
      */
-    public function mount(int $memo_id, string $tag_size = '', string $select_size = '', bool $readonly = false)
+    public function mount(Memo $memo, string $tag_size = '', string $select_size = '', bool $readonly = false)
     {
-        $this->memo_id = $memo_id;
+        $this->memo_id = $memo->id;
         $this->tag_size = $tag_size;
         $this->select_size = $select_size;
         $this->readonly = $readonly;
+
+        $this->attached_tags = $memo->tags;
     }
 
     /**
@@ -95,12 +85,12 @@ new class extends Component
             return;
         }
 
-        DB::transaction(function () use ($tag_id) {
-            $memo = Memo::lockForUpdate()->find($this->memo_id);
+        $memo = DB::transaction(function () use ($tag_id) {
+            $memo = Memo::with(['tags' => fn($q) => $q->orderBy('priority')])->lockForUpdate()->find($this->memo_id);
 
             // メモがない場合や、既に付与されている場合は何もしない
-            if (!isset($memo) || $memo->tags()->where('tag_id', $tag_id)->exists()) {
-                return;
+            if (!isset($memo) || $memo->tags->contains($tag_id)) {
+                return $memo;
             }
 
             // 権限チェック
@@ -110,12 +100,15 @@ new class extends Component
 
             // タグがない場合や、自分のタグではない場合は何もしない
             if (!isset($tag) || $tag->user_id !== Auth::id()){
-                return;
+                return $memo;
             }
 
             $memo->tags()->attach($tag_id);
-            $this->attached_tags = $this->attached_tags_original;
+            return $memo;
         });
+
+        // 最新の状態に更新
+        $this->attached_tags = $memo->tags()->orderBy('priority')->get();
     }
 
     /**
@@ -130,20 +123,24 @@ new class extends Component
             return;
         }
 
-        DB::transaction(function () use ($tag_id) {
-            $memo = Memo::lockForUpdate()->find($this->memo_id);
+        $memo = DB::transaction(function () use ($tag_id) {
+            $memo = Memo::with(['tags' => fn($q) => $q->orderBy('priority')])->lockForUpdate()->find($this->memo_id);
 
             // メモがない場合や、付与されていない場合は何もしない
-            if (!isset($memo) || !$memo->tags()->where('tag_id', $tag_id)->exists()) {
-                return;
+            if (!isset($memo) || !$memo->tags->contains($tag_id)) {
+                $this->attached_tags = $memo->tags()->orderBy('priority')->get();
+                return $memo;
             }
 
             // 権限チェック
             Gate::authorize('update', $memo);
 
             $memo->tags()->detach($tag_id);
-            $this->attached_tags = $this->attached_tags_original;
+            return $memo;
         });
+
+        // 最新の状態に更新
+        $this->attached_tags = $memo->tags()->orderBy('priority')->get();
     }
 };
 ?>

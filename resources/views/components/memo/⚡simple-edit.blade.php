@@ -21,6 +21,10 @@ new class extends Component
     #[Locked]
     public bool $removed = false;
 
+    /** @var \App\Models\Memo 削除アクションを実行した瞬間だけtrueにして親リストが更新されるまで非表示にする */
+    #[Locked]
+    public ?Memo $memo = null;
+
     /**
      * mount.
      *
@@ -32,6 +36,7 @@ new class extends Component
         // モデルのIDがある場合は、既存データ
         if (isset($rec->id)) {
             $this->form->setModel($rec);
+            $this->memo = $rec;
             return;
         }
 
@@ -134,8 +139,8 @@ new class extends Component
         </div>
     </div>
     <flux:memo-textarea class="field-sizing-content w-64" resize="both" wire:model="form.body" wire:input.debounce.500ms="save"></flux:memo-textarea>
-@isset($form->id)
-    <livewire:memo.tags class="mb-1 w-64" :memo_id="$form->id" tag_size="sm" select_size="xs" />
+@isset($memo)
+    <livewire:memo.tags class="mb-1 w-64" :$memo tag_size="sm" select_size="xs" />
 @endisset
     <flux:modal name="delete-{{ isset($new_key) ? 'new-' . $new_key : $form->id }}" class="min-w-[22rem]">
         <div class="space-y-6">
