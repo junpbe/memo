@@ -127,7 +127,7 @@ new class extends Component
     </div>
     <div class="flex flex-wrap gap-4">
 @foreach ($this->list as $rec)
-        <div class="w-64" wire:key="{{ $rec->id }}">
+        <div class="w-64">
             <flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
                 <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->body }}</flux:text>
             </flux:card>
@@ -140,7 +140,7 @@ new class extends Component
         <x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
         @error('form.body') <span class="error">{{ $message }}</span> @enderror
 @isset($form->id)
-        <livewire:memo.tags :memo_id="$form->id" select_size="xs" lazy_update />
+        <livewire:memo.tags-lazy-update :memo_id="$form->id" select_size="xs" />
 @endisset
         <div class="mt-5">
             <textarea name="body" class="w-full resize outline-none" rows="10" wire:model.live.debounce.500ms="form.body"></textarea>
