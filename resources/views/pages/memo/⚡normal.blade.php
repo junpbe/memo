@@ -75,6 +75,7 @@ new class extends Component
             $this->form->save();
         });
         $this->dispatch('saved-memo', $this->form->id);
+        $this->dispatch('tags-lazy-update');
     }
 
     /**
@@ -126,21 +127,21 @@ new class extends Component
     </div>
     <div class="flex flex-wrap gap-4">
 @foreach ($this->list as $rec)
-        <div class="w-64">
+        <div class="w-64" wire:key="{{ $rec->id }}">
             <flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
                 <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->body }}</flux:text>
             </flux:card>
-            <livewire:memo.tags class="mb-1 w-64" :memo_id="$rec->id" tag_size="sm" select_size="xs" readonly />
+            <livewire:memo.tags class="mb-1 w-64" :memo_id="$rec->id" tag_size="sm" readonly wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}" />
         </div>
 @endforeach
     </div>
     <flux:modal name="edit" class="w-full lg:max-w-5/10 max-w-9/10 dark:backdrop:bg-black/80!" wire:close="closeEdit" :dismissible="false">
         <x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
         <x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
-@isset($form->id)
-        <livewire:memo.tags :memo_id="$form->id" select_size="xs" />
-@endisset
         @error('form.body') <span class="error">{{ $message }}</span> @enderror
+@isset($form->id)
+        <livewire:memo.tags :memo_id="$form->id" select_size="xs" lazy_update />
+@endisset
         <div class="mt-5">
             <textarea name="body" class="w-full resize outline-none" rows="10" wire:model.live.debounce.500ms="form.body"></textarea>
         </div>
