@@ -62,7 +62,7 @@ new class extends Component
      */
     public function refreshList(): void
     {
-        $this->list = Auth::user()->memos()->orderByDesc('id')->get();
+        $this->list = Auth::user()->memos()->with(['tags' => fn($q) => $q->orderBy('priority')])->orderByDesc('id')->get();
     }
 };
 ?>

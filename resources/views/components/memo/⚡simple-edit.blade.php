@@ -21,6 +21,10 @@ new class extends Component
     #[Locked]
     public bool $removed = false;
 
+    /** @var \App\Models\Memo メモ */
+    #[Locked]
+    public ?Memo $memo = null;
+
     /**
      * mount.
      *
@@ -32,6 +36,7 @@ new class extends Component
         // モデルのIDがある場合は、既存データ
         if (isset($rec->id)) {
             $this->form->setModel($rec);
+            $this->memo = $rec;
             return;
         }
 
@@ -50,7 +55,7 @@ new class extends Component
     public function save(): void
     {
         DB::transaction(function () {
-            $this->form->save();
+            $this->memo = $this->form->save();
         });
         $this->dispatch('saved-memo', $this->form->id);
     }
@@ -72,6 +77,7 @@ new class extends Component
                 Gate::authorize('delete', $rec);
 
                 $rec->delete();
+                $this->memo = null;
             });
         }
 
@@ -95,12 +101,14 @@ new class extends Component
         $model = Memo::find($this->form->id);
         if (!isset($model)) {
             // DBに存在しない場合は削除処理を呼び出し再レンダリングで消す
+            $this->memo = null;
             $this->remove();
             return;
         }
 
         // データ更新
         $this->form->setModel($model);
+        $this->memo = $model;
     }
 
     /**
@@ -134,8 +142,8 @@ new class extends Component
         </div>
     </div>
     <flux:memo-textarea class="field-sizing-content w-64" resize="both" wire:model="form.body" wire:input.debounce.500ms="save"></flux:memo-textarea>
-@isset($form->id)
-    <livewire:memo.tags class="mb-1 w-64" :memo_id="$form->id" tag_size="sm" select_size="xs" />
+@isset($memo)
+    <livewire:memo.tags class="mb-1 w-64" :$memo tag_size="sm" select_size="xs" />
 @endisset
     <flux:modal name="delete-{{ isset($new_key) ? 'new-' . $new_key : $form->id }}" class="min-w-[22rem]">
         <div class="space-y-6">

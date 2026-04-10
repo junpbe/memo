@@ -95,22 +95,25 @@ class MemoForm extends Form
 
     /**
      * 保存。
+     *
+     * @return \App\Models\Memo メモ
      */
-    public function save(): void
+    public function save(): Memo
     {
         // モデルが存在しない場合は新規
         if (!$this->modelExists()) {
-            $this->store();
-            return;
+            return $this->store();
         }
 
-        $this->update();
+        return $this->update();
     }
 
     /**
      * 追加。
+     *
+     * @return \App\Models\Memo メモ
      */
-    protected function store(): void
+    protected function store(): Memo
     {
         // 権限チェック
         Gate::authorize('create', Memo::class);
@@ -123,12 +126,16 @@ class MemoForm extends Form
         $model->save();
 
         $this->setModel($model);
+
+        return $model;
     }
 
     /**
      * 更新。
+     *
+     * @return \App\Models\Memo メモ
      */
-    protected function update(): void
+    protected function update(): Memo
     {
         $this->validate();
 
@@ -141,5 +148,7 @@ class MemoForm extends Form
         $model->save();
 
         $this->setModel($model);
+
+        return $model;
     }
 }
