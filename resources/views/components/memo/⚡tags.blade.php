@@ -40,8 +40,17 @@ new class extends Component
     #[Computed]
     public function allTags(): Collection
     {
-        //TODO　ユーザID毎にメソッド内staticでキャッシュした方がよさそう
-        return Auth::user()->tags()->orderBy('priority')->get();
+        // タグのコンポーネントの数だけ同じクエリを発行してしまうので、ユーザIDで結果をキャッシュする（別ユーザIDが来ることはないはずだが念のため）
+        static $cache = [];
+
+        if (isset($cache[Auth::id()])) {
+            return $cache[Auth::id()];
+        }
+
+        $all_tags = Auth::user()->tags()->orderBy('priority')->get();
+        $cache[Auth::id()] = $all_tags;
+
+        return $all_tags;
     }
 
     /**
