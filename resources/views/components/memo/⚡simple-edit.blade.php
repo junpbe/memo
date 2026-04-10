@@ -21,7 +21,7 @@ new class extends Component
     #[Locked]
     public bool $removed = false;
 
-    /** @var \App\Models\Memo 削除アクションを実行した瞬間だけtrueにして親リストが更新されるまで非表示にする */
+    /** @var \App\Models\Memo メモ */
     #[Locked]
     public ?Memo $memo = null;
 
@@ -55,7 +55,7 @@ new class extends Component
     public function save(): void
     {
         DB::transaction(function () {
-            $this->form->save();
+            $this->memo = $this->form->save();
         });
         $this->dispatch('saved-memo', $this->form->id);
     }
@@ -77,6 +77,7 @@ new class extends Component
                 Gate::authorize('delete', $rec);
 
                 $rec->delete();
+                $this->memo = null;
             });
         }
 
@@ -100,12 +101,14 @@ new class extends Component
         $model = Memo::find($this->form->id);
         if (!isset($model)) {
             // DBに存在しない場合は削除処理を呼び出し再レンダリングで消す
+            $this->memo = null;
             $this->remove();
             return;
         }
 
         // データ更新
         $this->form->setModel($model);
+        $this->memo = $model;
     }
 
     /**

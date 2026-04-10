@@ -10,11 +10,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 
 new class extends Component
 {
     /** @var \App\Livewire\Forms\MemoForm フォーム */
     public MemoForm $form;
+
+    /** @var \App\Models\Memo メモ */
+    #[Locked]
+    public ?Memo $memo = null;
 
     /**
      * 一覧。
@@ -35,6 +40,7 @@ new class extends Component
         // 念のためフォームをリセットする
         $this->form->reset();
         $this->form->resetErrorBag();
+        $this->memo = null;
 
         Flux::modal('edit')->show();
     }
@@ -52,6 +58,7 @@ new class extends Component
             throw new ModelNotLatestException();
         }
         $this->form->setModel($rec);
+        $this->memo = $rec;
 
         Flux::modal('edit')->show();
     }
@@ -64,6 +71,7 @@ new class extends Component
         // フォームをリセットする
         $this->form->reset();
         $this->form->resetErrorBag();
+        $this->memo = null;
     }
 
     /**
@@ -72,7 +80,7 @@ new class extends Component
     public function save(): void
     {
         DB::transaction(function () {
-            $this->form->save();
+            $this->memo = $this->form->save();
         });
         $this->dispatch('saved-memo', $this->form->id);
         $this->dispatch('tags-lazy-update');
@@ -95,6 +103,7 @@ new class extends Component
                 Gate::authorize('delete', $rec);
 
                 $rec->delete();
+                $this->memo = null;
             });
         }
 
@@ -127,11 +136,11 @@ new class extends Component
     </div>
     <div class="flex flex-wrap gap-4">
 @foreach ($this->list as $rec)
-        <div class="w-64">
+        <div class="w-64" wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}">
             <flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
                 <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->body }}</flux:text>
             </flux:card>
-            <livewire:memo.tags class="mb-1 w-64" :memo="$rec" tag_size="sm" readonly wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}" />
+            <livewire:memo.tags class="mb-1 w-64" :memo="$rec" tag_size="sm" readonly />
         </div>
 @endforeach
     </div>
@@ -139,8 +148,8 @@ new class extends Component
         <x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
         <x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
         @error('form.body') <span class="error">{{ $message }}</span> @enderror
-@isset($form->id)
-        <livewire:memo.tags-lazy-update :memo_id="$form->id" select_size="xs" />
+@isset($memo)
+        <livewire:memo.tags-lazy-update :$memo select_size="xs" />
 @endisset
         <div class="mt-5">
             <textarea name="body" class="w-full resize outline-none" rows="10" wire:model.live.debounce.500ms="form.body"></textarea>

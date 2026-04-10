@@ -101,18 +101,17 @@ new class extends Component
     /**
      * mount.
      *
-     * @param int $memo_id メモID
+     * @param \App\Models\Memo $memo メモ
      * @param string $tag_size タグのサイズ
      * @param string $select_size セレクトボックスのサイズ
      */
-    public function mount(int $memo_id, string $tag_size = '', string $select_size = '')
+    public function mount(Memo $memo, string $tag_size = '', string $select_size = '')
     {
-        $this->memo_id = $memo_id;
+        $this->memo_id = $memo->id;
         $this->tag_size = $tag_size;
         $this->select_size = $select_size;
 
-        // 最初にDBの状態を取得
-        $this->attached_tags = $this->attached_tags_original;
+        $this->attached_tags = $memo->tags;
     }
 
     /**
