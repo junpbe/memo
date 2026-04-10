@@ -10,11 +10,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 
 new class extends Component
 {
     /** @var \App\Livewire\Forms\MemoForm フォーム */
     public MemoForm $form;
+
+    /** @var \App\Models\Memo メモ */
+    #[Locked]
+    public ?Memo $memo = null;
 
     /**
      * 一覧。
@@ -24,7 +30,7 @@ new class extends Component
     #[Computed]
     public function list(): Collection
     {
-        return Auth::user()->memos()->orderByDesc('id')->get();
+        return Auth::user()->memos()->with(['tags' => fn($q) => $q->orderBy('priority')])->orderByDesc('id')->get();
     }
 
     /**
@@ -35,6 +41,7 @@ new class extends Component
         // 念のためフォームをリセットする
         $this->form->reset();
         $this->form->resetErrorBag();
+        $this->memo = null;
 
         Flux::modal('edit')->show();
     }
@@ -52,6 +59,7 @@ new class extends Component
             throw new ModelNotLatestException();
         }
         $this->form->setModel($rec);
+        $this->memo = $rec;
 
         Flux::modal('edit')->show();
     }
@@ -64,6 +72,7 @@ new class extends Component
         // フォームをリセットする
         $this->form->reset();
         $this->form->resetErrorBag();
+        $this->memo = null;
     }
 
     /**
@@ -72,10 +81,20 @@ new class extends Component
     public function save(): void
     {
         DB::transaction(function () {
-            $this->form->save();
+            $this->memo = $this->form->save();
         });
+        $this->dispatch('tags-lazy-update');
         $this->dispatch('saved-memo', $this->form->id);
+
+        // タグを更新してからレンダリングしないと一覧のタグが古いままになるので、いったんここではレンダリングスキップ
+        $this->skipRender();
     }
+
+    /**
+     * レンダリング目的のダミー。
+     */
+    #[On('tags-lazy-updated')]
+    public function dummy(){}
 
     /**
      * 削除。
@@ -94,6 +113,7 @@ new class extends Component
                 Gate::authorize('delete', $rec);
 
                 $rec->delete();
+                $this->memo = null;
             });
         }
 
@@ -126,21 +146,21 @@ new class extends Component
     </div>
     <div class="flex flex-wrap gap-4">
 @foreach ($this->list as $rec)
-        <div class="w-64">
+        <div class="w-64" wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}_{{ $rec->tags->pluck('id')->join('-') }}">
             <flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
                 <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->body }}</flux:text>
             </flux:card>
-            <livewire:memo.tags class="mb-1 w-64" :memo_id="$rec->id" tag_size="sm" select_size="xs" readonly />
+            <livewire:memo.tags class="mb-1 w-64" :memo="$rec" tag_size="sm" readonly />
         </div>
 @endforeach
     </div>
     <flux:modal name="edit" class="w-full lg:max-w-5/10 max-w-9/10 dark:backdrop:bg-black/80!" wire:close="closeEdit" :dismissible="false">
         <x-action-message class="me-3" on="model-not-latest-error">他の人によって更新されました。</x-action-message>
         <x-action-message class="inline" on="saved-memo">保存しました</x-action-message>
-@isset($form->id)
-        <livewire:memo.tags :memo_id="$form->id" select_size="xs" />
-@endisset
         @error('form.body') <span class="error">{{ $message }}</span> @enderror
+@isset($memo)
+        <livewire:memo.tags-lazy-update :$memo select_size="xs" />
+@endisset
         <div class="mt-5">
             <textarea name="body" class="w-full resize outline-none" rows="10" wire:model.live.debounce.500ms="form.body"></textarea>
         </div>
