@@ -77,7 +77,7 @@ new class extends Component
         <livewire:memo.simple-edit :new_key="$key" wire:key="new_{{ $key }}" class="inline-block min-w-64 p-1 bg-sky-100/50 dark:bg-sky-900/50" />
 @endforeach
 @foreach ($list as $rec)
-        <livewire:memo.simple-edit :$rec wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}" class="inline-block min-w-64 p-1" />
+        <livewire:memo.simple-edit :$rec wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}_{{ $rec->tags->pluck('id')->join('-') }}" class="inline-block min-w-64 p-1" />
 @endforeach
     </div>
 </div>
