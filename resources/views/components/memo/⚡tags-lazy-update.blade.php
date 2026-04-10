@@ -163,25 +163,17 @@ new class extends Component
             // 権限チェック
             Gate::authorize('update', $memo);
 
-            $added_tags = $this->added_tags;
-            $removed_tags = $this->removed_tags;
+            // タグが自分のタグでないものを除去
+            $this->attached_tags = $this->attached_tags->whereStrict('user_id', Auth::id());
 
-            foreach ($added_tags as $tag) {
-                // タグが自分のタグでない場合はスキップ
-                if ($tag->user_id !== Auth::id()) {
-                    continue;
-                }
-                $memo->tags()->attach($tag->id);
-            }
-
-            foreach ($removed_tags as $tag) {
-                $memo->tags()->detach($tag->id);
-            }
+            // タグを更新
+            $memo->tags()->sync($this->attached_tags->pluck('id')->all());
 
             unset($this->added_tags);
             unset($this->removed_tags);
             unset($this->attached_tags_original);
         });
+        $this->dispatch('tags-lazy-updated');
     }
 };
 ?>

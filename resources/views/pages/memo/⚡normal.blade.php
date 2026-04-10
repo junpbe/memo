@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 
 new class extends Component
 {
@@ -82,9 +83,18 @@ new class extends Component
         DB::transaction(function () {
             $this->memo = $this->form->save();
         });
-        $this->dispatch('saved-memo', $this->form->id);
         $this->dispatch('tags-lazy-update');
+        $this->dispatch('saved-memo', $this->form->id);
+
+        // タグを更新してからレンダリングしないと一覧のタグが古いままになるので、いったんここではレンダリングスキップ
+        $this->skipRender();
     }
+
+    /**
+     * レンダリング目的のダミー。
+     */
+    #[On('tags-lazy-updated')]
+    public function dummy(){}
 
     /**
      * 削除。
@@ -136,7 +146,7 @@ new class extends Component
     </div>
     <div class="flex flex-wrap gap-4">
 @foreach ($this->list as $rec)
-        <div class="w-64" wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}">
+        <div class="w-64" wire:key="{{ $rec->id }}_{{ $rec->updated_at->format('YmdHisu') }}_{{ $rec->tags->pluck('id')->join('-') }}">
             <flux:card size="sm" class="hover:bg-zinc-100 dark:hover:bg-zinc-600" wire:click="edit({{ $rec->id }})">
                 <flux:text class="whitespace-pre-wrap wrap-break-word">{{ $rec->body }}</flux:text>
             </flux:card>
